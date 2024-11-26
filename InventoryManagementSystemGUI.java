@@ -107,39 +107,47 @@ public class InventoryManagementSystemGUI {
     }
 
     private void showMainMenu() {
-        JFrame mainMenuFrame = new JFrame("Main Menu - RESU Inventory Management System");
-        mainMenuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainMenuFrame.setSize(500, 300);
-        mainMenuFrame.setLocationRelativeTo(null);
-        mainMenuFrame.getContentPane().setBackground(new Color(240, 240, 240)); // Light gray background
+    JFrame mainMenuFrame = new JFrame("Main Menu - RESU Inventory Management System");
+    mainMenuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    mainMenuFrame.setSize(500, 350);  // Increase size to accommodate new button
+    mainMenuFrame.setLocationRelativeTo(null);
+    mainMenuFrame.getContentPane().setBackground(new Color(240, 240, 240)); // Light gray background
 
-        JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 10, 10));
-        JButton stockButton = new JButton("Manage Stock Inventory");
-        JButton customerButton = new JButton("Manage Customer Database");
-        JButton supplierButton = new JButton("Manage Supplier Database");
+    JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 10, 10));  // Increased row count to 4
+    JButton stockButton = new JButton("Manage Stock Inventory");
+    JButton customerButton = new JButton("Manage Customer Database");
+    JButton supplierButton = new JButton("Manage Supplier Database");
+    JButton analyticsButton = new JButton("View Inventory Usage Analytics");
 
-        // Set button colors  
-        stockButton.setBackground(new Color(0, 123, 255));
-        customerButton.setBackground(new Color(0, 123, 255));
-        supplierButton.setBackground(new Color(0, 123, 255));
+    // Set button colors
+    stockButton.setBackground(new Color(0, 123, 255));
+    customerButton.setBackground(new Color(0, 123, 255));
+    supplierButton.setBackground(new Color(0, 123, 255));
+    analyticsButton.setBackground(new Color(0, 123, 255));
 
-        stockButton.setForeground(Color.WHITE);
-        customerButton.setForeground(Color.WHITE);
-        supplierButton.setForeground(Color.WHITE);
+    stockButton.setForeground(Color.WHITE);
+    customerButton.setForeground(Color.WHITE);
+    supplierButton.setForeground(Color.WHITE);
+    analyticsButton.setForeground(Color.WHITE);
 
-        buttonPanel.add(stockButton);
-        buttonPanel.add(customerButton);
-        buttonPanel.add(supplierButton);
+    buttonPanel.add(stockButton);
+    buttonPanel.add(customerButton);
+    buttonPanel.add(supplierButton);
+    buttonPanel.add(analyticsButton);  // Add the new button
 
-        mainMenuFrame.add(new JLabel("Select an Option:", JLabel.CENTER), BorderLayout.NORTH);
-        mainMenuFrame.add(buttonPanel, BorderLayout.CENTER);
+    mainMenuFrame.add(new JLabel("Select an Option:", JLabel.CENTER), BorderLayout.NORTH);
+    mainMenuFrame.add(buttonPanel, BorderLayout.CENTER);
 
-        stockButton.addActionListener(e -> showStockInventoryWindow());
-        customerButton.addActionListener(e -> showCustomerDatabaseWindow());
-        supplierButton.addActionListener(e -> showSupplierDatabaseWindow());
+    stockButton.addActionListener(e -> showStockInventoryWindow());
+    customerButton.addActionListener(e -> showCustomerDatabaseWindow());
+    supplierButton.addActionListener(e -> showSupplierDatabaseWindow());
 
-        mainMenuFrame.setVisible(true);
-    }
+    // Add action listener for the new button
+    analyticsButton.addActionListener(e -> showAnalyticsWindow());
+
+    mainMenuFrame.setVisible(true);
+}
+
 
     private void showStockInventoryWindow() {
         JFrame stockFrame = createFrame("Stock Inventory Management", 800, 600);
@@ -419,6 +427,64 @@ public class InventoryManagementSystemGUI {
 
         return inputPanel;
     }
+    private void showAnalyticsWindow() {
+    // Create the window for inventory usage analytics
+    JFrame analyticsFrame = createFrame("Inventory Usage Analytics", 600, 400);
+    JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
+
+    // Add a text field to enter the time range (daily, weekly, monthly)
+    JTextField timeRangeField = new JTextField();
+    JButton generateButton = new JButton("Generate Report");
+    JButton exportButton = new JButton("Export Report");
+    JButton dashboardButton = new JButton("Show Report in Dashboard");
+
+    panel.add(new JLabel("Enter Time Range (daily, weekly, monthly):"));
+    panel.add(timeRangeField);
+    panel.add(generateButton);
+    panel.add(exportButton);
+    panel.add(dashboardButton);
+
+    // Set button styles
+    generateButton.setBackground(new Color(0, 123, 255));
+    exportButton.setBackground(new Color(0, 123, 255));
+    dashboardButton.setBackground(new Color(0, 123, 255));
+
+    generateButton.setForeground(Color.WHITE);
+    exportButton.setForeground(Color.WHITE);
+    dashboardButton.setForeground(Color.WHITE);
+
+    analyticsFrame.add(panel, BorderLayout.CENTER);
+
+    // Initialize InventoryUsageAnalytics
+    InventoryUsageAnalytics usageAnalytics = new InventoryUsageAnalytics(stockInventory);
+
+    // Add action listener for generating the report
+    generateButton.addActionListener(e -> {
+        String timeRange = timeRangeField.getText();
+        String report = usageAnalytics.generateReport(timeRange);
+        JOptionPane.showMessageDialog(analyticsFrame, report, "Generated Report", JOptionPane.INFORMATION_MESSAGE);
+    });
+
+    // Add action listener for exporting the report
+    exportButton.addActionListener(e -> {
+        String timeRange = timeRangeField.getText();
+        String report = usageAnalytics.generateReport(timeRange);
+        String format = JOptionPane.showInputDialog(analyticsFrame, "Enter format (pdf/csv):");
+        if (format != null) {
+            usageAnalytics.exportReport(report, format);
+        }
+    });
+
+    // Add action listener for showing the report in the dashboard
+    dashboardButton.addActionListener(e -> {
+        String timeRange = timeRangeField.getText();
+        String report = usageAnalytics.generateReport(timeRange);
+        usageAnalytics.showReportInDashboard(report);
+    });
+
+    analyticsFrame.setVisible(true);
+}
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(InventoryManagementSystemGUI::new);
