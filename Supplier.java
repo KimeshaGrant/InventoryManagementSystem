@@ -23,6 +23,13 @@ public class Supplier {
         return suppliedItem;
     }
 
+    public void setContactInfo(String contactInfo){
+        this.contactInfo=contactInfo;
+    }
+
+    public void setSuppliedItem(String suppliedItem){
+        this.suppliedItem = suppliedItem;
+    }
     // Method to display the supplier's information
     public void displaySupplier() {
         System.out.printf("Supplier: %s | Contact: %s | Supplies: %s%n", name, contactInfo, suppliedItem);

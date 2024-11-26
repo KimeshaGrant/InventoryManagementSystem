@@ -2,6 +2,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.Stack;
 
 public class InventoryManagementSystemGUI {
 
@@ -275,25 +276,33 @@ public class InventoryManagementSystemGUI {
         return inputPanel;
     }
 
+
     private void showSupplierDatabaseWindow() {
         JFrame supplierFrame = createFrame("Supplier Database Management", 800, 600);
         JTable supplierTable = createTable(new Object[]{"Name", "Contact Info", "Supplied Item"});
         JPanel inputPanel = createSupplierInputPanel(supplierTable);
-
         supplierFrame.add(new JScrollPane(supplierTable), BorderLayout.CENTER);
         supplierFrame.add(inputPanel, BorderLayout.NORTH);
         supplierFrame.setVisible(true);
+
     }
 
     private JPanel createSupplierInputPanel(JTable supplierTable) {
-        JPanel inputPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+        JPanel inputPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         JTextField nameField = new JTextField();
         JTextField contactField = new JTextField();
         JTextField suppliedItemField = new JTextField();
         JButton addButton = new JButton("Add Supplier");
+        JButton returnButton = new JButton("Return");
+        JButton updateButton = new JButton("Update");
 
         addButton.setBackground(new Color(0, 123, 255));
+        returnButton.setBackground(new Color(0, 123, 255));
+        updateButton.setBackground(new Color(0, 123, 255));
+
         addButton.setForeground(Color.WHITE);
+        returnButton.setForeground(Color.WHITE);
+        updateButton.setForeground(Color.WHITE);
 
         inputPanel.add(new JLabel("Name:"));
         inputPanel.add(nameField);
@@ -303,19 +312,60 @@ public class InventoryManagementSystemGUI {
         inputPanel.add(suppliedItemField);
         inputPanel.add(new JLabel("")); // Empty cell for layout purposes
         inputPanel.add(addButton);
+        inputPanel.add(returnButton);
+        inputPanel.add(updateButton);
 
         addButton.addActionListener(e -> {
             String name = nameField.getText();
             String contactInfo = contactField.getText();
             String suppliedItem = suppliedItemField.getText();
 
+            //Prevent duplicating
+            Supplier existingSupplier = supplierDatabase.searchSupplier(name, contactInfo);
+            if (existingSupplier != null) {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier already exists.");
+                return;
+            }
+
             supplierDatabase.addSupplier(name, contactInfo, suppliedItem);
 
             DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
             model.addRow(new Object[]{name, contactInfo, suppliedItem});
-
+            
+            supplierDatabase.saveToFile();
             JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier added successfully.");
         });
+
+        returnButton.addActionListener(e ->{
+            
+         });
+         
+         
+        updateButton.addActionListener(e ->{
+            int selectedRow = supplierTable.getSelectedRow();
+            if (selectedRow >= 0) {
+                String name = (String) supplierTable.getValueAt(selectedRow, 0);
+                String contactInfo = (String) supplierTable.getValueAt(selectedRow, 1);
+                String suppliedItem = (String) supplierTable.getValueAt(selectedRow, 2);
+    
+                String updatedContactInfo = JOptionPane.showInputDialog("Enter new contact info:", contactInfo);
+                String updatedSuppliedItem = JOptionPane.showInputDialog("Enter new supplied item:", suppliedItem);
+    
+                if (updatedContactInfo != null && updatedSuppliedItem != null) {
+                    supplierDatabase.updateSupplier(name, contactInfo, updatedContactInfo, updatedSuppliedItem);
+    
+                    DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
+                    model.setValueAt(updatedContactInfo, selectedRow, 1);
+                    model.setValueAt(updatedSuppliedItem, selectedRow, 2);
+    
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier updated.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a supplier to edit.");
+            }
+
+
+         });
 
         return inputPanel;
     }
