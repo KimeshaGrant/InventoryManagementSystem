@@ -206,6 +206,56 @@ public class InventoryManagementSystemGUI {
             }
         });
 
+        addButton.addActionListener(e -> {
+            String itemName = itemNameField.getText();
+            try {
+                int quantity = Integer.parseInt(quantityField.getText());
+                double price = Double.parseDouble(priceField.getText());
+                stockInventory.addStock(itemName, quantity, price);
+        
+                DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
+                model.addRow(new Object[]{itemName, quantity, price});
+        
+                // Check if stock is below 10 and notify
+                if (quantity < 10) {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), 
+                        "Warning: Stock for " + itemName + " is below 10.", 
+                        "Stock Alert", JOptionPane.WARNING_MESSAGE);
+                }
+        
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock added successfully.");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity or price. Please enter valid numbers.");
+            }
+        });
+        // noti
+        updateButton.addActionListener(e -> {
+            String itemName = itemNameField.getText();
+            try {
+                int quantity = Integer.parseInt(quantityField.getText());
+                stockInventory.updateStock(itemName, quantity);
+        
+                DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    if (model.getValueAt(i, 0).equals(itemName)) {
+                        model.setValueAt(quantity, i, 1);
+                        break;
+                    }
+                }
+        
+                // Check if stock is below 10 and notify
+                if (quantity < 10) {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), 
+                        "Warning: Stock for " + itemName + " is below 10.", 
+                        "Stock Alert", JOptionPane.WARNING_MESSAGE);
+                }
+        
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock updated successfully.");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity. Please enter a valid number.");
+            }
+        });
+        
         updateButton.addActionListener(e -> {
             String itemName = itemNameField.getText();
             try {
