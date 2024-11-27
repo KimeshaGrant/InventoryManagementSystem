@@ -1,8 +1,10 @@
 import javax.swing.*;
-import javax.swing.border.*;
 import java.awt.*;
-import java.util.List;
-import java.util.ArrayList;
+import java.awt.event.ActionEvent;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HistogramPanel extends JPanel {
     private int histogramHeight = 200;
@@ -17,15 +19,12 @@ public class HistogramPanel extends JPanel {
         setLayout(new BorderLayout());
 
         barPanel = new JPanel(new GridLayout(1, 0, barGap, 0));
-        Border outer = new MatteBorder(1, 1, 1, 1, Color.BLACK);
-        Border inner = new EmptyBorder(10, 10, 0, 10);
-        Border compound = new CompoundBorder(outer, inner);
-        barPanel.setBorder(compound);
+        barPanel.setPreferredSize(new Dimension(1000, histogramHeight)); // Set a large width for horizontal scrolling
+        JScrollPane scrollPane = new JScrollPane(barPanel);
+        add(scrollPane, BorderLayout.CENTER);
 
         labelPanel = new JPanel(new GridLayout(1, 0, barGap, 0));
         labelPanel.setBorder(new EmptyBorder(5, 10, 0, 10));
-
-        add(barPanel, BorderLayout.CENTER);
         add(labelPanel, BorderLayout.PAGE_END);
     }
 
@@ -40,24 +39,40 @@ public class HistogramPanel extends JPanel {
 
         int maxValue = 0;
 
-        for (Bar bar : bars)
+        for (Bar bar : bars) {
             maxValue = Math.max(maxValue, bar.getValue());
+        }
 
         for (Bar bar : bars) {
-            JLabel label = new JLabel(bar.getValue() + "");
+            // Create label for the bar value
+            JLabel label = new JLabel(String.valueOf(bar.getValue()));
             label.setHorizontalTextPosition(JLabel.CENTER);
             label.setHorizontalAlignment(JLabel.CENTER);
             label.setVerticalTextPosition(JLabel.TOP);
             label.setVerticalAlignment(JLabel.BOTTOM);
-            int barHeight = (bar.getValue() * histogramHeight) / maxValue;
-            Icon icon = new ColorIcon(bar.getColor(), barWidth, barHeight);
-            label.setIcon(icon);
-            barPanel.add(label);
 
+            // Calculate bar height and scale
+            int barHeight = (bar.getValue() * histogramHeight) / maxValue;
+
+            // Ensure bar height does not exceed panel size
+            if (barHeight > histogramHeight) {
+                barHeight = histogramHeight;
+            }
+
+            // Add a small margin between the bar and the label if necessary
+            int labelMargin = 10;  // Adjust this value based on your needs
+            Icon icon = new ColorIcon(bar.getColor(), barWidth, barHeight - labelMargin); // Reduce height slightly for label margin
+            label.setIcon(icon);
+
+            // Add bar icon and label to the panels
+            barPanel.add(label);
             JLabel barLabel = new JLabel(bar.getLabel());
             barLabel.setHorizontalAlignment(JLabel.CENTER);
             labelPanel.add(barLabel);
         }
+
+        revalidate();
+        repaint();
     }
 
     private class Bar {
