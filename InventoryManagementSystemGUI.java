@@ -259,32 +259,205 @@ public class InventoryManagementSystemGUI {
     }
 
     private JPanel createCustomerInputPanel(JTable customerTable) {
+<<<<<<< HEAD
         JPanel inputPanel = new JPanel(new GridLayout(3, 2, 10, 10));
         JTextField nameField = new JTextField();
         JTextField contactField = new JTextField();
+=======
+        JPanel inputPanel = new JPanel(new GridLayout(9, 7, 10, 10));
+        JTextField nameField = new JTextField();
+        JTextField contactField = new JTextField();
+        JTextField addressField = new JTextField();
+        JTextField orderNumberField = new JTextField();
+>>>>>>> 2648e5a8d96d0f79d29f32c1f70d423b50a0b1c6
         JButton addButton = new JButton("Add Customer");
+        JButton searchByNameButton = new JButton("Search by Name");
+        JButton searchByOrderButton = new JButton("Search by Order Number");
+        JButton updateButton = new JButton("Update");
+        JButton returnButton = new JButton("Return");
+        JButton payButton = new JButton("Pay");
+        JButton orderButton = new JButton("Add Order");
 
         addButton.setBackground(new Color(0, 123, 255));
         addButton.setForeground(Color.WHITE);
+        searchByNameButton.setBackground(new Color(0, 123, 255));
+        searchByNameButton.setForeground(Color.WHITE);
+        searchByOrderButton.setBackground(new Color(0, 123, 255)); 
+        searchByOrderButton.setForeground(Color.WHITE);
+        updateButton.setBackground(new Color(0, 123, 255));
+        updateButton.setForeground(Color.WHITE);
+        returnButton.setBackground(new Color(0, 123, 255));
+        returnButton.setForeground(Color.WHITE);
+        payButton.setBackground(new Color(0, 123, 255));
+        payButton.setForeground(Color.WHITE);
+        orderButton.setBackground(new Color(0, 123, 255));
+        orderButton.setForeground(Color.WHITE);
+    
 
         inputPanel.add(new JLabel("Name:"));
         inputPanel.add(nameField);
         inputPanel.add(new JLabel("Contact Info:"));
         inputPanel.add(contactField);
+<<<<<<< HEAD
+=======
+        inputPanel.add(new JLabel("Address:"));
+        inputPanel.add(addressField);
+        inputPanel.add(new JLabel("Order Number:")); 
+        inputPanel.add(orderNumberField);
+>>>>>>> 2648e5a8d96d0f79d29f32c1f70d423b50a0b1c6
         inputPanel.add(new JLabel("")); // Spacer
         inputPanel.add(addButton);
+        //inputPanel.add(new JLabel("Search by name or order number:"));
+        inputPanel.add(searchByNameButton);
+        inputPanel.add(searchByOrderButton);
+        inputPanel.add(updateButton);
+        inputPanel.add(returnButton);
+        inputPanel.add(payButton);
+        inputPanel.add(orderButton);
+
+
 
         addButton.addActionListener(e -> {
             String name = nameField.getText();
             String contactInfo = contactField.getText();
 
+<<<<<<< HEAD
             customerDatabase.addCustomer(name, contactInfo);
 
             DefaultTableModel model = (DefaultTableModel) customerTable.getModel();
             model.addRow(new Object[]{name, contactInfo});
+=======
+            if (name.isEmpty() || contactInfo.isEmpty() || address.isEmpty()) {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "All fields must be filled out.");
+            } else {
+                customerDatabase.addCustomer(name, contactInfo, address);
 
-            JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Customer added successfully.");
+                DefaultTableModel model = (DefaultTableModel) customerTable.getModel();
+                model.addRow(new Object[]{name, contactInfo, address, "View"});
+>>>>>>> 2648e5a8d96d0f79d29f32c1f70d423b50a0b1c6
+
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Customer added successfully.");
+            }
+            });
+
+            searchByNameButton.addActionListener(e -> {
+                String searchQuery = nameField.getText();
+                Customer customer = customerDatabase.searchCustomerByName(searchQuery);
+        
+                if (customer != null) {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Customer found: " + customer.getName());
+                } else {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Customer not found.");
+                }
+            });
+        
+            // Search by Order Number ActionListener (NEW)
+            searchByOrderButton.addActionListener(e -> {
+                String orderNumber = orderNumberField.getText();
+                if (orderNumber.isEmpty()) {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter an order number.");
+                } else {
+                    Customer customer = customerDatabase.searchCustomerByOrder(orderNumber);  // Assuming the method exists
+        
+                    if (customer != null) {
+                        JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Customer found: " + customer.getName() + " with Order Number: " + orderNumber);
+                    } else {
+                        JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Order Number not found.");
+                    }
+                }
+            });
+
+        updateButton.addActionListener(e -> {
+            int selectedRow = customerTable.getSelectedRow();
+            if (selectedRow >= 0) {
+                
+                String name = (String) customerTable.getValueAt(selectedRow, 0);
+                String contactInfo = (String) customerTable.getValueAt(selectedRow, 1);
+                String address = (String) customerTable.getValueAt(selectedRow, 2);
+        
+                
+                String updatedContactInfo = JOptionPane.showInputDialog("Enter new contact info:", contactInfo);
+                String updatedAddress = JOptionPane.showInputDialog("Enter new address:", address);
+        
+                
+                if (updatedContactInfo != null && updatedAddress != null && !updatedContactInfo.isEmpty() && !updatedAddress.isEmpty()) {
+                    customerDatabase.updateCustomer(name, contactInfo, updatedContactInfo, updatedAddress);
+        
+                    DefaultTableModel model = (DefaultTableModel) customerTable.getModel();
+                    model.setValueAt(updatedContactInfo, selectedRow, 1);
+                    model.setValueAt(updatedAddress, selectedRow, 2);
+        
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Customer updated.");
+                } else {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please provide valid contact info and address.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a customer to edit.");
+            }
         });
+
+        payButton.addActionListener(e -> {
+            int selectedRow = customerTable.getSelectedRow();
+            if (selectedRow >= 0) {
+                String name = (String) customerTable.getValueAt(selectedRow, 0);
+    
+                String amountStr = JOptionPane.showInputDialog("Enter payment amount:");
+                String method = JOptionPane.showInputDialog("Enter payment method:");
+    
+                if (amountStr != null && method != null && !amountStr.isEmpty() && !method.isEmpty()) {
+                    try {
+                        double amount = Double.parseDouble(amountStr);
+                        Customer customer = customerDatabase.searchCustomerByName(name);
+                        if (customer != null) {
+                            customerDatabase.addPayment(name, amount, method);
+                            JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Payment added successfully.");
+                        } else {
+                            JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Customer not found.");
+                        }
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid amount entered.");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "All fields must be filled out.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a customer to make payment.");
+            }
+        });
+
+        orderButton.addActionListener(e -> {
+            int selectedRow = customerTable.getSelectedRow();
+            if (selectedRow >= 0) {
+                String name = (String) customerTable.getValueAt(selectedRow, 0);
+    
+                String item = JOptionPane.showInputDialog("Enter item:");
+                String quantityStr = JOptionPane.showInputDialog("Enter quantity:");
+    
+                if (item != null && quantityStr != null && !item.isEmpty() && !quantityStr.isEmpty()) {
+                    try {
+                        int quantity = Integer.parseInt(quantityStr);
+                        Customer customer = customerDatabase.searchCustomerByName(name);
+                        if (customer != null) {
+                            customerDatabase.addOrderToCustomer(name, item, quantity);
+                            JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Order added successfully.");
+                        } else {
+                            JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Customer not found.");
+                        }
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity entered.");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "All fields must be filled out.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a customer to add order.");
+            }
+        });
+
+    returnButton.addActionListener(e -> {
+        JFrame topFrame = (JFrame) inputPanel.getTopLevelAncestor();
+        topFrame.dispose();
+    });
 
         return inputPanel;
     }

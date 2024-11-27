@@ -1,0 +1,6 @@
+Customer List
+================
+Customer: Anna | Contact Info: Blue | Address: Linstead
+Purchase History:
+Payment History:
+Amount: 200.00 | Method: Cash | Date: Wed Nov 27 15:59:26 COT 2024
