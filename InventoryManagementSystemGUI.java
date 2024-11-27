@@ -296,7 +296,7 @@ public class InventoryManagementSystemGUI {
 
     private void showCustomerDatabaseWindow() {
         JFrame customerFrame = createFrame("Customer Database Management", 800, 600);
-        JTable customerTable = createTable(new Object[]{"Name", "Contact Info"});
+        JTable customerTable = createTable(new Object[]{"Name", "Contact Info", "Address"});
         JPanel inputPanel = createCustomerInputPanel(customerTable);
 
         customerFrame.add(new JScrollPane(customerTable), BorderLayout.CENTER);
@@ -305,9 +305,10 @@ public class InventoryManagementSystemGUI {
     }
 
     private JPanel createCustomerInputPanel(JTable customerTable) {
-        JPanel inputPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        JPanel inputPanel = new JPanel(new GridLayout(4, 2, 10, 10));
         JTextField nameField = new JTextField();
         JTextField contactField = new JTextField();
+        JTextField addressField = new JTextField();
         JButton addButton = new JButton("Add Customer");
 
         addButton.setBackground(new Color(0, 123, 255));
@@ -317,17 +318,20 @@ public class InventoryManagementSystemGUI {
         inputPanel.add(nameField);
         inputPanel.add(new JLabel("Contact Info:"));
         inputPanel.add(contactField);
+        inputPanel.add(new JLabel("Address:"));
+        inputPanel.add(addressField);
         inputPanel.add(new JLabel("")); // Spacer
         inputPanel.add(addButton);
 
         addButton.addActionListener(e -> {
             String name = nameField.getText();
             String contactInfo = contactField.getText();
+            String address = addressField.getText();
 
-            customerDatabase.addCustomer(name, contactInfo);
+            customerDatabase.addCustomer(name, contactInfo, address);
 
             DefaultTableModel model = (DefaultTableModel) customerTable.getModel();
-            model.addRow(new Object[]{name, contactInfo});
+            model.addRow(new Object[]{name, contactInfo, address});
 
             JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Customer added successfully.");
         });
