@@ -2,7 +2,10 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.Stack;
+import java.util.*;
+import javax.mail.*;
+import javax.mail.internet.*;
+import java.io.*;
 
 public class InventoryManagementSystemGUI {
 
@@ -28,14 +31,12 @@ public class InventoryManagementSystemGUI {
         JLabel titleLabel = new JLabel("RESU Inventory Management System", JLabel.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setForeground(Color.BLACK);
-        titleLabel.setBounds(0, 50, 400, 20
+        titleLabel.setBounds(0, 50, 400, 20);
 
-        );
         // Load the image (make sure the path is correct)
         ImageIcon splashImage = new ImageIcon("uwi.png"); // Change to your image path
         JLabel imageLabel = new JLabel(splashImage);
-        imageLabel.setBounds(50, 80 
-        , splashImage.getIconWidth(), splashImage.getIconHeight());
+        imageLabel.setBounds(50, 80, splashImage.getIconWidth(), splashImage.getIconHeight());
 
         JLabel splashLabel = new JLabel("Loading...", JLabel.CENTER);
         splashLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -201,62 +202,17 @@ public class InventoryManagementSystemGUI {
                 DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
                 model.addRow(new Object[]{itemName, quantity, price});
 
+                // Check stock and send email if less than 10
+                if (quantity < 10) {
+                    sendLowStockEmail(itemName, quantity);
+                }
+
                 JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock added successfully.");
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity or price. Please enter valid numbers.");
             }
         });
 
-        addButton.addActionListener(e -> {
-            String itemName = itemNameField.getText();
-            try {
-                int quantity = Integer.parseInt(quantityField.getText());
-                double price = Double.parseDouble(priceField.getText());
-                stockInventory.addStock(itemName, quantity, price);
-        
-                DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
-                model.addRow(new Object[]{itemName, quantity, price});
-        
-                // Check if stock is below 10 and notify
-                if (quantity < 10) {
-                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), 
-                        "Warning: Stock for " + itemName + " is below 10.", 
-                        "Stock Alert", JOptionPane.WARNING_MESSAGE);
-                }
-        
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock added successfully.");
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity or price. Please enter valid numbers.");
-            }
-        });
-        // noti
-        updateButton.addActionListener(e -> {
-            String itemName = itemNameField.getText();
-            try {
-                int quantity = Integer.parseInt(quantityField.getText());
-                stockInventory.updateStock(itemName, quantity);
-        
-                DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    if (model.getValueAt(i, 0).equals(itemName)) {
-                        model.setValueAt(quantity, i, 1);
-                        break;
-                    }
-                }
-        
-                // Check if stock is below 10 and notify
-                if (quantity < 10) {
-                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), 
-                        "Warning: Stock for " + itemName + " is below 10.", 
-                        "Stock Alert", JOptionPane.WARNING_MESSAGE);
-                }
-        
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock updated successfully.");
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity. Please enter a valid number.");
-            }
-        });
-        
         updateButton.addActionListener(e -> {
             String itemName = itemNameField.getText();
             try {
@@ -269,6 +225,11 @@ public class InventoryManagementSystemGUI {
                         model.setValueAt(quantity, i, 1);
                         break;
                     }
+                }
+
+                // Check stock and send email if less than 10
+                if (quantity < 10) {
+                    sendLowStockEmail(itemName, quantity);
                 }
 
                 JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock updated successfully.");
@@ -283,6 +244,40 @@ public class InventoryManagementSystemGUI {
         });
 
         return inputPanel;
+    }
+
+    private void sendLowStockEmail(String itemName, int quantity) {
+        String recipient = "user@example.com"; // Change this to your desired recipient email
+        String subject = "Low Stock Alert: " + itemName;
+        String body = "The stock for the item \"" + itemName + "\" is below the threshold. Current quantity: " + quantity + ".";
+
+        String from = "youremail@example.com"; // Your email address
+        String password = "yourpassword"; // Your email password
+
+        Properties properties = new Properties();
+        properties.put("mail.smtp.host", "smtp.gmail.com");
+        properties.put("mail.smtp.port", "587");
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
+
+        Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(from, password);
+            }
+        });
+
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(from));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+            message.setSubject(subject);
+            message.setText(body);
+
+            Transport.send(message);
+            System.out.println("Low stock email sent successfully!");
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
     }
 
     private void showCustomerDatabaseWindow() {
@@ -326,33 +321,25 @@ public class InventoryManagementSystemGUI {
         return inputPanel;
     }
 
-
     private void showSupplierDatabaseWindow() {
         JFrame supplierFrame = createFrame("Supplier Database Management", 800, 600);
         JTable supplierTable = createTable(new Object[]{"Name", "Contact Info", "Supplied Item"});
         JPanel inputPanel = createSupplierInputPanel(supplierTable);
+
         supplierFrame.add(new JScrollPane(supplierTable), BorderLayout.CENTER);
         supplierFrame.add(inputPanel, BorderLayout.NORTH);
         supplierFrame.setVisible(true);
-
     }
 
     private JPanel createSupplierInputPanel(JTable supplierTable) {
-        JPanel inputPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        JPanel inputPanel = new JPanel(new GridLayout(4, 2, 10, 10));
         JTextField nameField = new JTextField();
         JTextField contactField = new JTextField();
         JTextField suppliedItemField = new JTextField();
         JButton addButton = new JButton("Add Supplier");
-        JButton returnButton = new JButton("Return");
-        JButton updateButton = new JButton("Update");
 
         addButton.setBackground(new Color(0, 123, 255));
-        returnButton.setBackground(new Color(0, 123, 255));
-        updateButton.setBackground(new Color(0, 123, 255));
-
         addButton.setForeground(Color.WHITE);
-        returnButton.setForeground(Color.WHITE);
-        updateButton.setForeground(Color.WHITE);
 
         inputPanel.add(new JLabel("Name:"));
         inputPanel.add(nameField);
@@ -362,60 +349,19 @@ public class InventoryManagementSystemGUI {
         inputPanel.add(suppliedItemField);
         inputPanel.add(new JLabel("")); // Empty cell for layout purposes
         inputPanel.add(addButton);
-        inputPanel.add(returnButton);
-        inputPanel.add(updateButton);
 
         addButton.addActionListener(e -> {
             String name = nameField.getText();
             String contactInfo = contactField.getText();
             String suppliedItem = suppliedItemField.getText();
 
-            //Prevent duplicating
-            Supplier existingSupplier = supplierDatabase.searchSupplier(name, contactInfo);
-            if (existingSupplier != null) {
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier already exists.");
-                return;
-            }
-
             supplierDatabase.addSupplier(name, contactInfo, suppliedItem);
 
             DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
             model.addRow(new Object[]{name, contactInfo, suppliedItem});
-            
-            supplierDatabase.saveToFile();
+
             JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier added successfully.");
         });
-
-        returnButton.addActionListener(e ->{
-            
-         });
-         
-         
-        updateButton.addActionListener(e ->{
-            int selectedRow = supplierTable.getSelectedRow();
-            if (selectedRow >= 0) {
-                String name = (String) supplierTable.getValueAt(selectedRow, 0);
-                String contactInfo = (String) supplierTable.getValueAt(selectedRow, 1);
-                String suppliedItem = (String) supplierTable.getValueAt(selectedRow, 2);
-    
-                String updatedContactInfo = JOptionPane.showInputDialog("Enter new contact info:", contactInfo);
-                String updatedSuppliedItem = JOptionPane.showInputDialog("Enter new supplied item:", suppliedItem);
-    
-                if (updatedContactInfo != null && updatedSuppliedItem != null) {
-                    supplierDatabase.updateSupplier(name, contactInfo, updatedContactInfo, updatedSuppliedItem);
-    
-                    DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
-                    model.setValueAt(updatedContactInfo, selectedRow, 1);
-                    model.setValueAt(updatedSuppliedItem, selectedRow, 2);
-    
-                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier updated.");
-                }
-            } else {
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a supplier to edit.");
-            }
-
-
-         });
 
         return inputPanel;
     }
