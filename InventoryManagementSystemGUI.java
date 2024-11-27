@@ -2,7 +2,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.Stack;
+import java.text.NumberFormat;
+import java.util.ArrayList;
 
 public class InventoryManagementSystemGUI {
 
@@ -279,8 +280,14 @@ public class InventoryManagementSystemGUI {
 
     private void showSupplierDatabaseWindow() {
         JFrame supplierFrame = createFrame("Supplier Database Management", 800, 600);
-        JTable supplierTable = createTable(new Object[]{"Name", "Contact Info", "Supplied Item"});
+        JTable supplierTable = createTable(new Object[]{"Name", "Contact Info", "Supplied Item", "Expenditure"});
         JPanel inputPanel = createSupplierInputPanel(supplierTable);
+        supplierDatabase.loadFromFile(); // Load suppliers from file
+
+        DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
+        for (Supplier supplier : supplierDatabase.getSuppliers()) {
+            model.addRow(new Object[]{supplier.getName(), supplier.getContactInfo(), supplier.getSuppliedItem(), supplier.getTotalExpenditures()});
+        }
         supplierFrame.add(new JScrollPane(supplierTable), BorderLayout.CENTER);
         supplierFrame.add(inputPanel, BorderLayout.NORTH);
         supplierFrame.setVisible(true);
@@ -288,21 +295,25 @@ public class InventoryManagementSystemGUI {
     }
 
     private JPanel createSupplierInputPanel(JTable supplierTable) {
-        JPanel inputPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        JPanel inputPanel = new JPanel(new GridLayout(7, 7, 10, 10));
         JTextField nameField = new JTextField();
         JTextField contactField = new JTextField();
         JTextField suppliedItemField = new JTextField();
+        JTextField expenditureField = new JTextField();
         JButton addButton = new JButton("Add Supplier");
-        JButton returnButton = new JButton("Return");
         JButton updateButton = new JButton("Update");
+        JButton addExpenditureButton = new JButton("Add Expenditure");
+        JButton returnButton = new JButton("Return");
 
         addButton.setBackground(new Color(0, 123, 255));
-        returnButton.setBackground(new Color(0, 123, 255));
         updateButton.setBackground(new Color(0, 123, 255));
+        addExpenditureButton.setBackground(new Color(0, 123, 255));
+        returnButton.setBackground(new Color(0, 123, 255));
 
         addButton.setForeground(Color.WHITE);
-        returnButton.setForeground(Color.WHITE);
         updateButton.setForeground(Color.WHITE);
+        addExpenditureButton.setForeground(Color.WHITE);
+        returnButton.setForeground(Color.WHITE);
 
         inputPanel.add(new JLabel("Name:"));
         inputPanel.add(nameField);
@@ -310,19 +321,37 @@ public class InventoryManagementSystemGUI {
         inputPanel.add(contactField);
         inputPanel.add(new JLabel("Supplied Item:"));
         inputPanel.add(suppliedItemField);
-        inputPanel.add(new JLabel("")); // Empty cell for layout purposes
+        inputPanel.add(new JLabel("Expenditure Amount:"));
+        inputPanel.add(expenditureField);
+        //inputPanel.add(new JLabel("")); // Empty cell for layout purposes
         inputPanel.add(addButton);
-        inputPanel.add(returnButton);
         inputPanel.add(updateButton);
+        inputPanel.add(addExpenditureButton);
+        inputPanel.add(returnButton);
+        
 
         addButton.addActionListener(e -> {
             String name = nameField.getText();
             String contactInfo = contactField.getText();
             String suppliedItem = suppliedItemField.getText();
 
+            //Ensure there is an input
+            if (name.isEmpty() || contactInfo.isEmpty() || suppliedItem.isEmpty()) {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "All fields must be filled out.");
+                return; 
+            }
+
             //Prevent duplicating
-            Supplier existingSupplier = supplierDatabase.searchSupplier(name, contactInfo);
-            if (existingSupplier != null) {
+            ArrayList<Supplier> existingSuppliers = supplierDatabase.searchSupplier(name);
+            boolean isDuplicate = false;
+            for (Supplier supplier : existingSuppliers) {
+                if (supplier.getContactInfo().equalsIgnoreCase(contactInfo)) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+
+            if (isDuplicate) {
                 JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier already exists.");
                 return;
             }
@@ -330,17 +359,51 @@ public class InventoryManagementSystemGUI {
             supplierDatabase.addSupplier(name, contactInfo, suppliedItem);
 
             DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
-            model.addRow(new Object[]{name, contactInfo, suppliedItem});
+            model.addRow(new Object[]{name, contactInfo, suppliedItem, "$0.00"});
             
             supplierDatabase.saveToFile();
             JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier added successfully.");
         });
 
+        //Close Supplier Management window
         returnButton.addActionListener(e ->{
-            
+            JFrame topFrame = (JFrame) inputPanel.getTopLevelAncestor();
+            topFrame.dispose();
          });
-         
-         
+
+        addExpenditureButton.addActionListener(e -> {
+            int selectedRow = supplierTable.getSelectedRow();
+            if (selectedRow >= 0) {
+                String name = (String) supplierTable.getValueAt(selectedRow, 0);
+                String expenditureText = expenditureField.getText();
+        
+                try {
+                    double amount = Double.parseDouble(expenditureText);
+                    if (amount <= 0) {
+                        JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid positive amount.");
+                        return;
+                    }
+        
+                    supplierDatabase.addExpenditure(name, contactField.getText(), amount);
+
+                    // Format the expenditure as currency
+                    NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+                    String formattedExpenditure = currencyFormat.format(supplierDatabase.searchSupplier(name).get(0).getTotalExpenditures());
+        
+                    // Update the expenditure column in the table
+                    DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
+                    model.setValueAt(formattedExpenditure, selectedRow, 3);
+        
+                    // Optionally, refresh expenditure total or handle other changes
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Expenditure added.");
+                } catch (NumberFormatException nfe) {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid number for expenditure.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a supplier to add an expenditure.");
+            }
+        });
+
         updateButton.addActionListener(e ->{
             int selectedRow = supplierTable.getSelectedRow();
             if (selectedRow >= 0) {
@@ -363,10 +426,7 @@ public class InventoryManagementSystemGUI {
             } else {
                 JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a supplier to edit.");
             }
-
-
-         });
-
+        });
         return inputPanel;
     }
 
