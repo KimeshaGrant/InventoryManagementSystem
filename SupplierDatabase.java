@@ -1,11 +1,12 @@
 import java.util.ArrayList;
 import java.io.PrintWriter;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
+
 
 public class SupplierDatabase {
     private ArrayList<Supplier> suppliers;
@@ -13,7 +14,6 @@ public class SupplierDatabase {
 
     public SupplierDatabase() {
         this.suppliers = new ArrayList<>();
-        loadFromFile();
     }
 
     // Add a new supplier to the database
@@ -22,11 +22,11 @@ public class SupplierDatabase {
             System.out.println("Invalid supplier data.");
             return;
         }
-        //Check for dubpliacte
-        for (Supplier supplier: suppliers){
+        //Check for duplicate
+        for (Supplier supplier : suppliers) {
             if (supplier.getName().equalsIgnoreCase(name) && supplier.getContactInfo().equalsIgnoreCase(contactInfo)) {
                 System.out.println("Supplier is already added.");
-                return;
+                return; 
             }
         }
         Supplier newSupplier = new Supplier(name, contactInfo, suppliedItem);
@@ -44,6 +44,21 @@ public class SupplierDatabase {
         }
         return foundSuppliers;
     }
+
+    public void addExpenditure(String name, String contactInfo, double amount) {
+        ArrayList<Supplier> matchingSuppliers = searchSupplier(name);
+    
+        if (!matchingSuppliers.isEmpty()) {
+            for (Supplier supplier : matchingSuppliers) {
+                supplier.addExpenditure(amount);
+                System.out.println("Expenditure added to supplier: " + supplier.getName());
+            }
+            saveToFile();  // Save after adding expenditure
+        } else {
+            System.out.println("Supplier not found.");
+        }
+    }
+
      // Update a supplier's details
      public void updateSupplier(String name, String contactInfo, String updatedContactInfo, String updatedSuppliedItem) {
         for (Supplier supplier : suppliers) {
@@ -58,17 +73,6 @@ public class SupplierDatabase {
         System.out.println("Supplier not found.");
     }
 
-    public Supplier searchSupplier(String name, String contactInfo) {
-        for (Supplier supplier : suppliers) {
-            if (supplier.getName().equalsIgnoreCase(name) && supplier.getContactInfo().equalsIgnoreCase(contactInfo)) {
-                return supplier;  // Return the matching supplier
-            }
-        }
-        System.out.println("Supplier not found.");
-        return null;
-    }
-
-
     // Display all suppliers in the database
     public void displayAllSuppliers() {
         System.out.println("\n--- Supplier Database ---");
@@ -80,21 +84,25 @@ public class SupplierDatabase {
             }
         }
     }
-    
-    public void saveToFile(){
-        try (PrintWriter writer = new PrintWriter(new FileWriter(fileName))){
+
+    public ArrayList<Supplier> getSuppliers() {
+        return suppliers;
+    }
+
+    public void saveToFile() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(fileName))) {
             writer.println("Suppliers List");
             writer.println("================");
-            for (Supplier supplier : suppliers){
-                writer.printf("Supplier: %s | Contact: %s | Supplies: %s%n",
-                 supplier.getName(), supplier.getContactInfo(), supplier.getSuppliedItem());
+            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+            for (Supplier supplier : suppliers) {
+                String formattedExpenditure = currencyFormat.format(supplier.getTotalExpenditures());
+                writer.printf("Supplier: %s | Contact: %s | Supplies: %s%n | Total Expenditure: %s%n",
+                    supplier.getName(), supplier.getContactInfo(), supplier.getSuppliedItem(), formattedExpenditure);
             }
-            System.out.println("Supplier data save to" + fileName);
-
-        } catch (IOException e){
-            System.err.println("Error Saving to file:" + e.getMessage());
+            System.out.println("Supplier data saved to " + fileName);
+        } catch (IOException e) {
+            System.err.println("Error saving to file: " + e.getMessage());
         }
-
     }
 
     // Load suppliers from file
@@ -110,7 +118,20 @@ public class SupplierDatabase {
                     String name = parts[0].trim();
                     String contactInfo = parts[1].trim();
                     String suppliedItem = parts[2].trim();
+    
+                    // If the line has a formatted currency value for the expenditure
+                    String expenditureString = parts[3].trim();
+                    double totalExpenditure = 0.0;
+                    try {
+                        // Parse the currency string to double (remove any non-numeric characters like "$" and commas)
+                        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+                        totalExpenditure = currencyFormat.parse(expenditureString).doubleValue();
+                    } catch (ParseException e) {
+                        System.err.println("Error parsing expenditure from file: " + e.getMessage());
+                    }
+    
                     Supplier supplier = new Supplier(name, contactInfo, suppliedItem);
+                    supplier.addExpenditure(totalExpenditure);  // Set the total expenditure
                     suppliers.add(supplier);
                 }
             }
@@ -119,5 +140,4 @@ public class SupplierDatabase {
             System.err.println("Error loading from file: " + e.getMessage());
         }
     }
-
 }
