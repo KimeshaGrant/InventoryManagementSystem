@@ -550,3 +550,4 @@ public class InventoryManagementSystemGUI {
         SwingUtilities.invokeLater(InventoryManagementSystemGUI::new);
     }
 }
+
