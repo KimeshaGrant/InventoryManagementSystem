@@ -28,6 +28,28 @@ public class Customer {
         return address;
     }
 
+    // Getter for the purchase history
+    public ArrayList<Order> getPurchaseHistory() {
+        return purchaseHistory;
+    }
+
+    public ArrayList<Payment> getPaymentHistory() {
+        return paymentHistory;
+    }
+
+    public void addOrder(Order order) {
+        this.purchaseHistory.add(order); 
+    }
+    
+    public Order searchOrderByOrderNumber(String orderNumber) {
+        for (Order order : purchaseHistory) {
+            if (order.getOrderNumber().equals(orderNumber)) {
+                return order;
+            }
+          }
+        return null; // Order not found
+    }
+
     public void setContactInfo(String contactInfo) {
         this.contactInfo = contactInfo;  // Set new contact info
     }
@@ -35,15 +57,20 @@ public class Customer {
     public void setAddress(String address) {
         this.address = address;  // Set new address
     }
-    // Add a purchase item to the history
-    public void addPurchase(String item, int quantity) {
-        purchaseHistory.add(new Order(item, quantity, new Date()));
-    }
+   
 
     // Add a payment record
     public void addPayment(double amount, String method) {
-        paymentHistory.add(new Payment(amount, method, new Date()));
+        Payment payment = new Payment(amount, method, new Date());
+        paymentHistory.add(payment);
     }
+
+    public void addPurchase(String item, int quantity, String orderNumber) {
+        Order newOrder = new Order(orderNumber, item, quantity, new Date());
+        this.purchaseHistory.add(newOrder);
+        System.out.println("Order added to customer " + name + ": " + orderNumber);
+    }
+
 
     // View purchase history with details
     public void viewPurchaseHistory() {
@@ -52,7 +79,8 @@ public class Customer {
         } else {
             System.out.println("Purchase History for " + name + ":");
             for (Order order : purchaseHistory) {
-                System.out.printf("Item: %s | Quantity: %d | Date: %s\n", 
+                System.out.printf("Order Number: %s | Item: %s | Quantity: %d | Date: %s\n", 
+                                  order.getOrderNumber(), 
                                   order.getItem(), 
                                   order.getQuantity(), 
                                   order.getDate());
@@ -84,10 +112,7 @@ public class Customer {
         } else {
             // Print each purchase on a new line
             for (Order order : purchaseHistory) {
-                System.out.printf("Item: %s | Quantity: %d | Date: %s\n", 
-                    order.getItem(), 
-                    order.getQuantity(), 
-                    order.getDate());
+                System.out.println(order);
     }
         }
 
@@ -100,54 +125,7 @@ public class Customer {
             }
     } 
 }
-
-    // Getter for the purchase history
-    public ArrayList<Order> getPurchaseHistory() {
-        return purchaseHistory;
-    }
-
-    public ArrayList<Payment> getPaymentHistory() {
-        return paymentHistory;
-    }
+    
 }
 
-class Payment {
-    private double amount;
-    private String method;
-    private Date date;
-
-    public Payment(double amount, String method, Date date) {
-        this.amount = amount;
-        this.method = method;
-        this.date = date;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Amount: %.2f | Method: %s | Date: %s", amount, method, date);
-    }
-}
-
-class Order {
-    private String item;
-    private int quantity;
-    private Date date;
-
-    public Order(String item, int quantity, Date date) {
-        this.item = item;
-        this.quantity = quantity;
-        this.date = date;
-    }
-
-    public String getItem() {
-        return item;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-}
+   
