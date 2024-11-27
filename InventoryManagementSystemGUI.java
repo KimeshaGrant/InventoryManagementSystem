@@ -250,7 +250,7 @@ public class InventoryManagementSystemGUI {
         String recipient = "user@example.com"; // Change this to your desired recipient email
         String subject = "Low Stock Alert: " + itemName;
         String body = "The stock for the item \"" + itemName + "\" is below the threshold. Current quantity: " + quantity + ".";
-
+        
         String from = "youremail@example.com"; // Your email address
         String password = "yourpassword"; // Your email password
 
