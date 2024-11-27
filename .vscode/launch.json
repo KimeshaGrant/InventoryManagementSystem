@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "InventoryUsageAnalytics",
+            "request": "launch",
+            "mainClass": "InventoryUsageAnalytics",
+            "projectName": "InventoryManagementSystem_804a3e45"
+        },
+        {
+            "type": "java",
+            "name": "InventoryManagementSystemGUI",
+            "request": "launch",
+            "mainClass": "InventoryManagementSystemGUI",
+            "projectName": "InventoryManagementSystem_804a3e45"
+        },
+        {
+            "type": "java",
             "name": "InventoryManagementSystemGUI",
             "request": "launch",
             "mainClass": "InventoryManagementSystemGUI",
