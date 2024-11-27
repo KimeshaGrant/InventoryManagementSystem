@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class HistogramPanel extends JPanel {
     private int histogramHeight = 200;
     private int barWidth = 50;
