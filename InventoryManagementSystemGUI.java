@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.text.NumberFormat;
 
 // Main class to run the inventory management system
 public class InventoryManagementSystemGUI {
@@ -290,7 +291,6 @@ public class InventoryManagementSystemGUI {
         return inputPanel;
     }
 
-    // Show Supplier Database Window
     private void showSupplierDatabaseWindow() {
         JFrame supplierFrame = createFrame("Supplier Database Management", 800, 600);
         JTable supplierTable = createTable(new Object[]{"Name", "Contact Information", "Address", "Supplied Item", "Expenditure", "Transaction Date"});
@@ -305,9 +305,9 @@ public class InventoryManagementSystemGUI {
         supplierFrame.add(new JScrollPane(supplierTable), BorderLayout.CENTER);
         supplierFrame.add(inputPanel, BorderLayout.NORTH);
         supplierFrame.setVisible(true);
+
     }
 
-    // Create supplier input panel
     private JPanel createSupplierInputPanel(JTable supplierTable) {
         JPanel inputPanel = new JPanel(new BorderLayout(10, 10));
         JTextField nameField = new JTextField();
@@ -320,7 +320,6 @@ public class InventoryManagementSystemGUI {
         JButton updateButton = new JButton("Update Supplier");
         JButton returnButton = new JButton("Return");
 
-        // Set button styles
         addButton.setBackground(new Color(0, 123, 255));
         updateButton.setBackground(new Color(0, 123, 255));
         returnButton.setBackground(new Color(0, 123, 255));
@@ -352,7 +351,6 @@ public class InventoryManagementSystemGUI {
         inputPanel.add(buttonsPanel, BorderLayout.SOUTH);
 
         addButton.addActionListener(e -> {
-            String supplierID = supplierIDField.getText();
             String name = nameField.getText();
             String contactInfo = contactField.getText();
             String address = addressField.getText(); 
@@ -492,7 +490,6 @@ public class InventoryManagementSystemGUI {
                 JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a supplier to edit.");
             }
         });
-
         return inputPanel;
     }
 
