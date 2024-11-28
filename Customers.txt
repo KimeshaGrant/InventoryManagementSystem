@@ -1,6 +1,7 @@
 Customer List
 ================
-Customer: Anna | Contact Info: Blue | Address: Linstead
+Customer: John Doe | Contact Info: 1876-555-5555 | Address: Behind the Bushes
 Purchase History:
+Item: Book | Quantity: 75 | Date: Thu Nov 28 15:53:10 EST 2024
 Payment History:
-Amount: 200.00 | Method: Cash | Date: Wed Nov 27 15:59:26 COT 2024
+Amount: 700000000.00 | Method: Cash | Date: Thu Nov 28 15:54:12 EST 2024

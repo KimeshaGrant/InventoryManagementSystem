@@ -181,6 +181,8 @@ public class StockInventory {
         return inventory;
     }
 
+    
+
     // Generate a report of inventory changes
     public void generateInventoryChangeReport() {
         System.out.println("\n--- Inventory Change Report ---");
