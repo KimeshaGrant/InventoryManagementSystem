@@ -222,4 +222,9 @@ public class CustomerDatabase {
             System.err.println("Error loading from file: " + e.getMessage());
         }
     }
+
+
+    public ArrayList <Customer> getCustomers() {
+        return customers;
+    }
 }
