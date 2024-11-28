@@ -1,12 +1,14 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.text.NumberFormat;
+import java.awt.event.*;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
+// Main class to run the inventory management system
 public class InventoryManagementSystemGUI {
-
+    
     private JFrame loginFrame;
     private StockInventory stockInventory;
     private CustomerDatabase customerDatabase;
@@ -29,14 +31,12 @@ public class InventoryManagementSystemGUI {
         JLabel titleLabel = new JLabel("RESU Inventory Management System", JLabel.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setForeground(Color.BLACK);
-        titleLabel.setBounds(0, 50, 400, 20
+        titleLabel.setBounds(0, 50, 400, 20);
 
-        );
         // Load the image (make sure the path is correct)
         ImageIcon splashImage = new ImageIcon("uwi.png"); // Change to your image path
         JLabel imageLabel = new JLabel(splashImage);
-        imageLabel.setBounds(50, 80 
-        , splashImage.getIconWidth(), splashImage.getIconHeight());
+        imageLabel.setBounds(50, 80, splashImage.getIconWidth(), splashImage.getIconHeight());
 
         JLabel splashLabel = new JLabel("Loading...", JLabel.CENTER);
         splashLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -87,7 +87,7 @@ public class InventoryManagementSystemGUI {
 
         JLabel welcomeLabel = new JLabel("Welcome to RESU Inventory Management System", JLabel.CENTER);
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        welcomeLabel.setForeground((Color.BLACK)); // Change color for a more appealing effect
+        welcomeLabel.setForeground(Color.BLACK);
 
         loginFrame.add(welcomeLabel, BorderLayout.NORTH);
         loginFrame.add(loginPanel, BorderLayout.CENTER);
@@ -95,8 +95,10 @@ public class InventoryManagementSystemGUI {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
 
-            if (username.equals("resu") && password.equals("password123")) {
-                JOptionPane.showMessageDialog(loginFrame, "Login successful! Welcome, " + username + ".");
+            // Check login credentials from file
+            String realName = authenticateUser(username, password);
+            if (realName != null) {
+                JOptionPane.showMessageDialog(loginFrame, "Login successful! Welcome, " + realName + ".");
                 loginFrame.dispose();
                 showMainMenu();
             } else {
@@ -107,49 +109,74 @@ public class InventoryManagementSystemGUI {
         loginFrame.setVisible(true);
     }
 
+    private String authenticateUser(String username, String password) {
+        try {
+            File file = new File("ResuStaffUsers.txt");  // File where usernames and passwords are stored
+            if (!file.exists()) {
+                return null;
+            }
+
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] credentials = line.split(",");
+                String storedUsername = credentials[0].trim();
+                String storedPassword = credentials[3].trim();
+                String storedName = credentials[1].trim();  // Assuming the second column is the name
+
+                if (storedUsername.equals(username) && storedPassword.equals(password)) {
+                    reader.close();
+                    return storedName;  // Return the real name of the user
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error reading user data: " + e.getMessage());
+        }
+        return null;  // If no match is found
+    }
+
     private void showMainMenu() {
-    JFrame mainMenuFrame = new JFrame("Main Menu - RESU Inventory Management System");
-    mainMenuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    mainMenuFrame.setSize(500, 350);  // Increase size to accommodate new button
-    mainMenuFrame.setLocationRelativeTo(null);
-    mainMenuFrame.getContentPane().setBackground(new Color(240, 240, 240)); // Light gray background
+        JFrame mainMenuFrame = new JFrame("Main Menu - RESU Inventory Management System");
+        mainMenuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainMenuFrame.setSize(500, 350);
+        mainMenuFrame.setLocationRelativeTo(null);
+        mainMenuFrame.getContentPane().setBackground(new Color(240, 240, 240)); // Light gray background
 
-    JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 10, 10));  // Increased row count to 4
-    JButton stockButton = new JButton("Manage Stock Inventory");
-    JButton customerButton = new JButton("Manage Customer Database");
-    JButton supplierButton = new JButton("Manage Supplier Database");
-    JButton analyticsButton = new JButton("View Inventory Usage Analytics");
+        JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 10, 10));  // Increased row count to 4
+        JButton stockButton = new JButton("Manage Stock Inventory");
+        JButton customerButton = new JButton("Manage Customer Database");
+        JButton supplierButton = new JButton("Manage Supplier Database");
+        JButton analyticsButton = new JButton("View Inventory Usage Analytics");
 
-    // Set button colors
-    stockButton.setBackground(new Color(0, 123, 255));
-    customerButton.setBackground(new Color(0, 123, 255));
-    supplierButton.setBackground(new Color(0, 123, 255));
-    analyticsButton.setBackground(new Color(0, 123, 255));
+        // Set button colors
+        stockButton.setBackground(new Color(0, 123, 255));
+        customerButton.setBackground(new Color(0, 123, 255));
+        supplierButton.setBackground(new Color(0, 123, 255));
+        analyticsButton.setBackground(new Color(0, 123, 255));
 
-    stockButton.setForeground(Color.WHITE);
-    customerButton.setForeground(Color.WHITE);
-    supplierButton.setForeground(Color.WHITE);
-    analyticsButton.setForeground(Color.WHITE);
+        stockButton.setForeground(Color.WHITE);
+        customerButton.setForeground(Color.WHITE);
+        supplierButton.setForeground(Color.WHITE);
+        analyticsButton.setForeground(Color.WHITE);
 
-    buttonPanel.add(stockButton);
-    buttonPanel.add(customerButton);
-    buttonPanel.add(supplierButton);
-    buttonPanel.add(analyticsButton);  // Add the new button
+        buttonPanel.add(stockButton);
+        buttonPanel.add(customerButton);
+        buttonPanel.add(supplierButton);
+        buttonPanel.add(analyticsButton);  // Add the new button
 
-    mainMenuFrame.add(new JLabel("Select an Option:", JLabel.CENTER), BorderLayout.NORTH);
-    mainMenuFrame.add(buttonPanel, BorderLayout.CENTER);
+        mainMenuFrame.add(new JLabel("Select an Option:", JLabel.CENTER), BorderLayout.NORTH);
+        mainMenuFrame.add(buttonPanel, BorderLayout.CENTER);
 
-    stockButton.addActionListener(e -> showStockInventoryWindow());
-    customerButton.addActionListener(e -> showCustomerDatabaseWindow());
-    supplierButton.addActionListener(e -> showSupplierDatabaseWindow());
+        stockButton.addActionListener(e -> showStockInventoryWindow());
+        customerButton.addActionListener(e -> showCustomerDatabaseWindow());
+        supplierButton.addActionListener(e -> showSupplierDatabaseWindow());
+        analyticsButton.addActionListener(e -> showAnalyticsWindow());
 
-    // Add action listener for the new button
-    analyticsButton.addActionListener(e -> showAnalyticsWindow());
+        mainMenuFrame.setVisible(true);
+    }
 
-    mainMenuFrame.setVisible(true);
-}
-
-
+    // Show Stock Inventory Window
     private void showStockInventoryWindow() {
         JFrame stockFrame = createFrame("Stock Inventory Management", 800, 600);
         JTable stockTable = createTable(new Object[]{"Item Name", "Quantity", "Price"});
@@ -160,6 +187,7 @@ public class InventoryManagementSystemGUI {
         stockFrame.setVisible(true);
     }
 
+    // Create a new frame
     private JFrame createFrame(String title, int width, int height) {
         JFrame frame = new JFrame(title);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -169,27 +197,22 @@ public class InventoryManagementSystemGUI {
         return frame;
     }
 
+    // Create a new table
     private JTable createTable(Object[] columnNames) {
         return new JTable(new DefaultTableModel(columnNames, 0));
     }
 
+    // Create stock input panel
     private JPanel createStockInputPanel(JTable stockTable) {
         JPanel inputPanel = new JPanel(new GridLayout(4, 2, 10, 10));
         JTextField itemNameField = new JTextField();
         JTextField quantityField = new JTextField();
         JTextField priceField = new JTextField();
         JButton addButton = new JButton("Add Stock");
-        JButton updateButton = new JButton("Update Stock");
-        JButton calculateButton = new JButton("Calculate Value");
 
         // Set button styles
         addButton.setBackground(new Color(0, 123, 255));
-        updateButton.setBackground(new Color(0, 123, 255));
-        calculateButton.setBackground(new Color(0, 123, 255));
-
         addButton.setForeground(Color.WHITE);
-        updateButton.setForeground(Color.WHITE);
-        calculateButton.setForeground(Color.WHITE);
 
         inputPanel.add(new JLabel("Item Name:"));
         inputPanel.add(itemNameField);
@@ -198,105 +221,33 @@ public class InventoryManagementSystemGUI {
         inputPanel.add(new JLabel("Price:"));
         inputPanel.add(priceField);
         inputPanel.add(addButton);
-        inputPanel.add(updateButton);
 
         addButton.addActionListener(e -> {
             String itemName = itemNameField.getText();
-            try {
-                int quantity = Integer.parseInt(quantityField.getText());
-                double price = Double.parseDouble(priceField.getText());
-                stockInventory.addStock(itemName, quantity, price);
+            String quantityStr = quantityField.getText();
+            String priceStr = priceField.getText();
 
-                DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
-                model.addRow(new Object[]{itemName, quantity, price});
+            if (!itemName.isEmpty() && !quantityStr.isEmpty() && !priceStr.isEmpty()) {
+                try {
+                    int quantity = Integer.parseInt(quantityStr);
+                    double price = Double.parseDouble(priceStr);
 
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock added successfully.");
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity or price. Please enter valid numbers.");
-            }
-        });
-
-        addButton.addActionListener(e -> {
-            String itemName = itemNameField.getText();
-            try {
-                int quantity = Integer.parseInt(quantityField.getText());
-                double price = Double.parseDouble(priceField.getText());
-                stockInventory.addStock(itemName, quantity, price);
-        
-                DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
-                model.addRow(new Object[]{itemName, quantity, price});
-        
-                // Check if stock is below 10 and notify
-                if (quantity < 10) {
-                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), 
-                        "Warning: Stock for " + itemName + " is below 10.", 
-                        "Stock Alert", JOptionPane.WARNING_MESSAGE);
+                    // Add stock item to the table
+                    DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
+                    model.addRow(new Object[]{itemName, quantity, price});
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Invalid quantity or price.");
                 }
-        
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock added successfully.");
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity or price. Please enter valid numbers.");
             }
-        });
-        // noti
-        updateButton.addActionListener(e -> {
-            String itemName = itemNameField.getText();
-            try {
-                int quantity = Integer.parseInt(quantityField.getText());
-                stockInventory.updateStock(itemName, quantity);
-        
-                DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    if (model.getValueAt(i, 0).equals(itemName)) {
-                        model.setValueAt(quantity, i, 1);
-                        break;
-                    }
-                }
-        
-                // Check if stock is below 10 and notify
-                if (quantity < 10) {
-                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), 
-                        "Warning: Stock for " + itemName + " is below 10.", 
-                        "Stock Alert", JOptionPane.WARNING_MESSAGE);
-                }
-        
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock updated successfully.");
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity. Please enter a valid number.");
-            }
-        });
-        
-        updateButton.addActionListener(e -> {
-            String itemName = itemNameField.getText();
-            try {
-                int quantity = Integer.parseInt(quantityField.getText());
-                stockInventory.updateStock(itemName, quantity);
-
-                DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    if (model.getValueAt(i, 0).equals(itemName)) {
-                        model.setValueAt(quantity, i, 1);
-                        break;
-                    }
-                }
-
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock updated successfully.");
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity. Please enter a valid number.");
-            }
-        });
-
-        calculateButton.addActionListener(e -> {
-            double totalValue = stockInventory.calculateInventoryValue();
-            JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Total Inventory Value: $" + totalValue);
         });
 
         return inputPanel;
     }
 
+    // Show Customer Database Window
     private void showCustomerDatabaseWindow() {
         JFrame customerFrame = createFrame("Customer Database Management", 800, 600);
-        JTable customerTable = createTable(new Object[]{"Name", "Contact Info"});
+        JTable customerTable = createTable(new Object[]{"Customer ID", "Name", "Phone"});
         JPanel inputPanel = createCustomerInputPanel(customerTable);
 
         customerFrame.add(new JScrollPane(customerTable), BorderLayout.CENTER);
@@ -304,38 +255,42 @@ public class InventoryManagementSystemGUI {
         customerFrame.setVisible(true);
     }
 
+    // Create customer input panel
     private JPanel createCustomerInputPanel(JTable customerTable) {
-        JPanel inputPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        JPanel inputPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+        JTextField customerIDField = new JTextField();
         JTextField nameField = new JTextField();
-        JTextField contactField = new JTextField();
+        JTextField phoneField = new JTextField();
         JButton addButton = new JButton("Add Customer");
 
+        // Set button styles
         addButton.setBackground(new Color(0, 123, 255));
         addButton.setForeground(Color.WHITE);
 
+        inputPanel.add(new JLabel("Customer ID:"));
+        inputPanel.add(customerIDField);
         inputPanel.add(new JLabel("Name:"));
         inputPanel.add(nameField);
-        inputPanel.add(new JLabel("Contact Info:"));
-        inputPanel.add(contactField);
-        inputPanel.add(new JLabel("")); // Spacer
+        inputPanel.add(new JLabel("Phone:"));
+        inputPanel.add(phoneField);
         inputPanel.add(addButton);
 
         addButton.addActionListener(e -> {
+            String customerID = customerIDField.getText();
             String name = nameField.getText();
-            String contactInfo = contactField.getText();
+            String phone = phoneField.getText();
 
-            customerDatabase.addCustomer(name, contactInfo);
-
-            DefaultTableModel model = (DefaultTableModel) customerTable.getModel();
-            model.addRow(new Object[]{name, contactInfo});
-
-            JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Customer added successfully.");
+            if (!customerID.isEmpty() && !name.isEmpty() && !phone.isEmpty()) {
+                // Add customer entry to the table
+                DefaultTableModel model = (DefaultTableModel) customerTable.getModel();
+                model.addRow(new Object[]{customerID, name, phone});
+            }
         });
 
         return inputPanel;
     }
 
-
+    // Show Supplier Database Window
     private void showSupplierDatabaseWindow() {
         JFrame supplierFrame = createFrame("Supplier Database Management", 800, 600);
         JTable supplierTable = createTable(new Object[]{"Name", "Contact Information", "Address", "Supplied Item", "Expenditure", "Transaction Date"});
@@ -350,9 +305,9 @@ public class InventoryManagementSystemGUI {
         supplierFrame.add(new JScrollPane(supplierTable), BorderLayout.CENTER);
         supplierFrame.add(inputPanel, BorderLayout.NORTH);
         supplierFrame.setVisible(true);
-
     }
 
+    // Create supplier input panel
     private JPanel createSupplierInputPanel(JTable supplierTable) {
         JPanel inputPanel = new JPanel(new BorderLayout(10, 10));
         JTextField nameField = new JTextField();
@@ -365,6 +320,7 @@ public class InventoryManagementSystemGUI {
         JButton updateButton = new JButton("Update Supplier");
         JButton returnButton = new JButton("Return");
 
+        // Set button styles
         addButton.setBackground(new Color(0, 123, 255));
         updateButton.setBackground(new Color(0, 123, 255));
         returnButton.setBackground(new Color(0, 123, 255));
@@ -396,6 +352,7 @@ public class InventoryManagementSystemGUI {
         inputPanel.add(buttonsPanel, BorderLayout.SOUTH);
 
         addButton.addActionListener(e -> {
+            String supplierID = supplierIDField.getText();
             String name = nameField.getText();
             String contactInfo = contactField.getText();
             String address = addressField.getText(); 
@@ -535,69 +492,33 @@ public class InventoryManagementSystemGUI {
                 JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a supplier to edit.");
             }
         });
+
         return inputPanel;
     }
+
+    // Show Analytics Window
     private void showAnalyticsWindow() {
-    // Create the window for inventory usage analytics
-    JFrame analyticsFrame = createFrame("Inventory Usage Analytics", 600, 400);
-    JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
+        JFrame analyticsFrame = createFrame("Inventory Usage Analytics", 800, 600);
+        JPanel panel = new JPanel();
+        JButton generateReportButton = new JButton("Generate Report");
+        JTextArea reportArea = new JTextArea(10, 30);
 
-    // Add a text field to enter the time range (daily, weekly, monthly)
-    JTextField timeRangeField = new JTextField();
-    JButton generateButton = new JButton("Generate Report");
-    JButton exportButton = new JButton("Export Report");
-    JButton dashboardButton = new JButton("Show Report in Dashboard");
+        panel.add(generateReportButton);
+        panel.add(new JScrollPane(reportArea));
 
-    panel.add(new JLabel("Enter Time Range (daily, weekly, monthly):"));
-    panel.add(timeRangeField);
-    panel.add(generateButton);
-    panel.add(exportButton);
-    panel.add(dashboardButton);
+        generateReportButton.addActionListener(e -> {
+            // Generate and display a sample report
+            reportArea.setText("Sample Inventory Usage Report:\n\n");
+            reportArea.append("Stock Item 1: 200 sold\n");
+            reportArea.append("Stock Item 2: 150 sold\n");
+            // You can replace this with actual data generation
+        });
 
-    // Set button styles
-    generateButton.setBackground(new Color(0, 123, 255));
-    exportButton.setBackground(new Color(0, 123, 255));
-    dashboardButton.setBackground(new Color(0, 123, 255));
-
-    generateButton.setForeground(Color.WHITE);
-    exportButton.setForeground(Color.WHITE);
-    dashboardButton.setForeground(Color.WHITE);
-
-    analyticsFrame.add(panel, BorderLayout.CENTER);
-
-    // Initialize InventoryUsageAnalytics
-    InventoryUsageAnalytics usageAnalytics = new InventoryUsageAnalytics(stockInventory);
-
-    // Add action listener for generating the report
-    generateButton.addActionListener(e -> {
-        String timeRange = timeRangeField.getText();
-        String report = usageAnalytics.generateReport(timeRange);
-        JOptionPane.showMessageDialog(analyticsFrame, report, "Generated Report", JOptionPane.INFORMATION_MESSAGE);
-    });
-
-    // Add action listener for exporting the report
-    exportButton.addActionListener(e -> {
-        String timeRange = timeRangeField.getText();
-        String report = usageAnalytics.generateReport(timeRange);
-        String format = JOptionPane.showInputDialog(analyticsFrame, "Enter format (pdf/csv):");
-        if (format != null) {
-            usageAnalytics.exportReport(report, format);
-        }
-    });
-
-    // Add action listener for showing the report in the dashboard
-    dashboardButton.addActionListener(e -> {
-        String timeRange = timeRangeField.getText();
-        String report = usageAnalytics.generateReport(timeRange);
-        usageAnalytics.showReportInDashboard(report);
-    });
-
-    analyticsFrame.setVisible(true);
-}
-
+        analyticsFrame.add(panel, BorderLayout.CENTER);
+        analyticsFrame.setVisible(true);
+    }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(InventoryManagementSystemGUI::new);
+        SwingUtilities.invokeLater(() -> new InventoryManagementSystemGUI());
     }
 }
-

@@ -26,10 +26,6 @@ class ResuStaffUser {
         return role;
     }
 
-    public boolean authenticate(String inputUsername, String inputPassword) {
-        return inputUsername.equals(staffID) && inputPassword.equals(password);
-    }
-
     // Example method to manage inventory (based on role/permissions)
     public void manageInventory(StockInventory stockInventory) {
         if (role.equals("Inventory Manager")) {
