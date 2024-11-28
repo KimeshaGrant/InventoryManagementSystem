@@ -17,8 +17,9 @@ public class SupplierDatabase {
     }
 
     // Add a new supplier to the database
-    public void addSupplier(String name, String contactInfo, String suppliedItem) {
-        if (name == null || name.isEmpty() || contactInfo == null || contactInfo.isEmpty() || suppliedItem == null || suppliedItem.isEmpty()) {
+    public void addSupplier(String name, String contactInfo, String address, String suppliedItem, double expenditureAmount, String transactionDate) {
+        if (name == null || name.isEmpty() || contactInfo == null || contactInfo.isEmpty() || address == null || address.isEmpty() 
+            || suppliedItem == null || suppliedItem.isEmpty() || transactionDate == null || transactionDate.isEmpty()){
             System.out.println("Invalid supplier data.");
             return;
         }
@@ -29,9 +30,11 @@ public class SupplierDatabase {
                 return; 
             }
         }
-        Supplier newSupplier = new Supplier(name, contactInfo, suppliedItem);
+        Supplier newSupplier = new Supplier(name, contactInfo, address, suppliedItem, transactionDate);
+        newSupplier.addExpenditure(expenditureAmount);
         suppliers.add(newSupplier);
-        System.out.println("Supplier added: " + name);
+        //System.out.println("Supplier added: " + name);  // Debugging line
+        saveToFile();
     }
 
     // Search for suppliers by name (returns a list of matching suppliers)
@@ -60,11 +63,15 @@ public class SupplierDatabase {
     }
 
      // Update a supplier's details
-     public void updateSupplier(String name, String contactInfo, String updatedContactInfo, String updatedSuppliedItem) {
+     public void updateSupplier(String name, String contactInfo, String updatedContactInfo, String updatedAddress, 
+                                String updatedSuppliedItem, String updatedTransactionDate, double updatedExpenditure) {
         for (Supplier supplier : suppliers) {
             if (supplier.getName().equalsIgnoreCase(name) && supplier.getContactInfo().equalsIgnoreCase(contactInfo)) {
                 supplier.setContactInfo(updatedContactInfo);
                 supplier.setSuppliedItem(updatedSuppliedItem);
+                supplier.setAddress(updatedAddress);
+                supplier.addExpenditure(updatedExpenditure);
+                supplier.setTransactionDate(updatedTransactionDate);
                 saveToFile();  // Save after editing
                 System.out.println("Supplier updated: " + name);
                 return;
@@ -95,16 +102,17 @@ public class SupplierDatabase {
             writer.println("================");
             NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
             for (Supplier supplier : suppliers) {
+                // Format the expenditure separately
                 String formattedExpenditure = currencyFormat.format(supplier.getTotalExpenditures());
-                writer.printf("Supplier: %s | Contact: %s | Supplies: %s%n | Total Expenditure: %s%n",
-                    supplier.getName(), supplier.getContactInfo(), supplier.getSuppliedItem(), formattedExpenditure);
+                writer.printf("Supplier: %s | Contact: %s | Address: %s | Supplies: %s | Total Expenditure: %s | Transaction Date: %s%n",
+                    supplier.getName(), supplier.getContactInfo(), supplier.getAddress(), supplier.getSuppliedItem(), formattedExpenditure, supplier.getTransactionDate());
             }
             System.out.println("Supplier data saved to " + fileName);
         } catch (IOException e) {
             System.err.println("Error saving to file: " + e.getMessage());
         }
     }
-
+    
     // Load suppliers from file
     public void loadFromFile() {
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
@@ -114,26 +122,28 @@ public class SupplierDatabase {
                     continue;  // Skip header
                 }
                 String[] parts = line.split(",");
-                if (parts.length == 3) {
-                    String name = parts[0].trim();
-                    String contactInfo = parts[1].trim();
-                    String suppliedItem = parts[2].trim();
-    
-                    // If the line has a formatted currency value for the expenditure
-                    String expenditureString = parts[3].trim();
-                    double totalExpenditure = 0.0;
-                    try {
-                        // Parse the currency string to double (remove any non-numeric characters like "$" and commas)
-                        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
-                        totalExpenditure = currencyFormat.parse(expenditureString).doubleValue();
-                    } catch (ParseException e) {
-                        System.err.println("Error parsing expenditure from file: " + e.getMessage());
-                    }
-    
-                    Supplier supplier = new Supplier(name, contactInfo, suppliedItem);
-                    supplier.addExpenditure(totalExpenditure);  // Set the total expenditure
-                    suppliers.add(supplier);
+                if (parts.length < 6) {
+                    continue;
                 }
+    
+                String name = parts[0].trim();
+                String contactInfo = parts[1].trim();
+                String address = parts[2].trim();
+                String suppliedItem = parts[3].trim();
+                String expenditureString = parts[4].trim();
+                String transactionDate = parts[5].trim();
+    
+                double totalExpenditure = 0.0;
+                try {
+                    NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+                    totalExpenditure = currencyFormat.parse(expenditureString).doubleValue();
+                } catch (ParseException e) {
+                    System.err.println("Error parsing expenditure from file: " + e.getMessage());
+                }
+    
+                Supplier supplier = new Supplier(name, contactInfo, address, suppliedItem, transactionDate);
+                supplier.addExpenditure(totalExpenditure);
+                suppliers.add(supplier);
             }
             System.out.println("Supplier data loaded from file.");
         } catch (IOException e) {

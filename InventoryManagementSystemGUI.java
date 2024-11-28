@@ -338,13 +338,14 @@ public class InventoryManagementSystemGUI {
 
     private void showSupplierDatabaseWindow() {
         JFrame supplierFrame = createFrame("Supplier Database Management", 800, 600);
-        JTable supplierTable = createTable(new Object[]{"Name", "Contact Info", "Supplied Item", "Expenditure"});
+        JTable supplierTable = createTable(new Object[]{"Name", "Contact Information", "Address", "Supplied Item", "Expenditure", "Transaction Date"});
         JPanel inputPanel = createSupplierInputPanel(supplierTable);
+        SupplierDatabase supplierDatabase = new SupplierDatabase();
         supplierDatabase.loadFromFile(); // Load suppliers from file
 
         DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
         for (Supplier supplier : supplierDatabase.getSuppliers()) {
-            model.addRow(new Object[]{supplier.getName(), supplier.getContactInfo(), supplier.getSuppliedItem(), supplier.getTotalExpenditures()});
+            model.addRow(new Object[]{supplier.getName(), supplier.getContactInfo(), supplier.getAddress(), supplier.getSuppliedItem(),supplier.getTotalExpenditures(), supplier.getTransactionDate()});
         }
         supplierFrame.add(new JScrollPane(supplierTable), BorderLayout.CENTER);
         supplierFrame.add(inputPanel, BorderLayout.NORTH);
@@ -353,51 +354,91 @@ public class InventoryManagementSystemGUI {
     }
 
     private JPanel createSupplierInputPanel(JTable supplierTable) {
-        JPanel inputPanel = new JPanel(new GridLayout(7, 7, 10, 10));
+        JPanel inputPanel = new JPanel(new BorderLayout(10, 10));
         JTextField nameField = new JTextField();
         JTextField contactField = new JTextField();
+        JTextField addressField = new JTextField();
         JTextField suppliedItemField = new JTextField();
         JTextField expenditureField = new JTextField();
+        JTextField transactionDateField = new JTextField();
         JButton addButton = new JButton("Add Supplier");
-        JButton updateButton = new JButton("Update");
-        JButton addExpenditureButton = new JButton("Add Expenditure");
+        JButton updateButton = new JButton("Update Supplier");
         JButton returnButton = new JButton("Return");
 
         addButton.setBackground(new Color(0, 123, 255));
         updateButton.setBackground(new Color(0, 123, 255));
-        addExpenditureButton.setBackground(new Color(0, 123, 255));
         returnButton.setBackground(new Color(0, 123, 255));
-
         addButton.setForeground(Color.WHITE);
         updateButton.setForeground(Color.WHITE);
-        addExpenditureButton.setForeground(Color.WHITE);
         returnButton.setForeground(Color.WHITE);
 
-        inputPanel.add(new JLabel("Name:"));
-        inputPanel.add(nameField);
-        inputPanel.add(new JLabel("Contact Info:"));
-        inputPanel.add(contactField);
-        inputPanel.add(new JLabel("Supplied Item:"));
-        inputPanel.add(suppliedItemField);
-        inputPanel.add(new JLabel("Expenditure Amount:"));
-        inputPanel.add(expenditureField);
-        //inputPanel.add(new JLabel("")); // Empty cell for layout purposes
-        inputPanel.add(addButton);
-        inputPanel.add(updateButton);
-        inputPanel.add(addExpenditureButton);
-        inputPanel.add(returnButton);
-        
+
+        JPanel fieldsPanel = new JPanel(new GridLayout(6, 2, 10, 10));
+        fieldsPanel.add(new JLabel("Name:"));
+        fieldsPanel.add(nameField);
+        fieldsPanel.add(new JLabel("Contact Information:"));
+        fieldsPanel.add(contactField);
+        fieldsPanel.add(new JLabel("Address:"));
+        fieldsPanel.add(addressField);
+        fieldsPanel.add(new JLabel("Supplied Item:"));
+        fieldsPanel.add(suppliedItemField);
+        fieldsPanel.add(new JLabel("Expenditure:"));
+        fieldsPanel.add(expenditureField);
+        fieldsPanel.add(new JLabel("Transaction Date:"));
+        fieldsPanel.add(transactionDateField);
+
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING, 10, 10));
+        buttonsPanel.add(addButton);
+        buttonsPanel.add(updateButton);
+        buttonsPanel.add(returnButton);
+
+        inputPanel.add(fieldsPanel, BorderLayout.CENTER);
+        inputPanel.add(buttonsPanel, BorderLayout.SOUTH);
 
         addButton.addActionListener(e -> {
             String name = nameField.getText();
             String contactInfo = contactField.getText();
+            String address = addressField.getText(); 
             String suppliedItem = suppliedItemField.getText();
+            String transactionDate = transactionDateField.getText();
+            double expenditureAmount;
+
+
 
             //Ensure there is an input
-            if (name.isEmpty() || contactInfo.isEmpty() || suppliedItem.isEmpty()) {
+            if (name.isEmpty() || contactInfo.isEmpty() || address.isEmpty() || suppliedItem.isEmpty() || transactionDate.isEmpty()) {
                 JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "All fields must be filled out.");
                 return; 
             }
+
+
+            // Validate contact format
+            if (!contactInfo.matches("\\d{3}-\\d{3}-\\d{4}")) {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid contact number xxx-xxx-xxxx.");
+                return;
+            }
+
+
+              // Validate the expenditure input
+            
+            try {
+                expenditureAmount = Double.parseDouble(expenditureField.getText());
+                if (expenditureAmount <= 0) {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid positive amount.");
+                    return;
+                }
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid expenditure amount.");
+                return;
+            }
+            
+
+            // Validate date format
+            if (!Supplier.isValidDate(transactionDate)) {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid date yyyy/mm/dd.");
+                return;
+            }
+
 
             //Prevent duplicating
             ArrayList<Supplier> existingSuppliers = supplierDatabase.searchSupplier(name);
@@ -414,12 +455,24 @@ public class InventoryManagementSystemGUI {
                 return;
             }
 
-            supplierDatabase.addSupplier(name, contactInfo, suppliedItem);
+            supplierDatabase.addSupplier(name, contactInfo, address, suppliedItem, expenditureAmount, transactionDate);
+
+            // Format expenditure for display
+            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+            String formattedExpenditure = currencyFormat.format(expenditureAmount);
 
             DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
-            model.addRow(new Object[]{name, contactInfo, suppliedItem, "$0.00"});
-            
+            model.addRow(new Object[]{name, contactInfo, address, suppliedItem, formattedExpenditure, transactionDate});
+
             supplierDatabase.saveToFile();
+
+            // Clear the text fields
+            nameField.setText("");
+            contactField.setText("");
+            addressField.setText("");
+            suppliedItemField.setText("");
+            expenditureField.setText("");
+            transactionDateField.setText("");
             JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier added successfully.");
         });
 
@@ -429,58 +482,55 @@ public class InventoryManagementSystemGUI {
             topFrame.dispose();
          });
 
-        addExpenditureButton.addActionListener(e -> {
+
+
+        updateButton.addActionListener(e -> {
             int selectedRow = supplierTable.getSelectedRow();
             if (selectedRow >= 0) {
                 String name = (String) supplierTable.getValueAt(selectedRow, 0);
-                String expenditureText = expenditureField.getText();
+                String currentContactInfo = (String) supplierTable.getValueAt(selectedRow, 1);
         
+                // Prompt for updated details
+                String updatedContactInfo = JOptionPane.showInputDialog("Enter new contact information:", currentContactInfo);
+                //Validate contact Info
+                if (updatedContactInfo != null && !updatedContactInfo.matches("\\d{3}-\\d{3}-\\d{4}")) {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid contact number xxx-xxx-xxxx.");
+                    return;
+                }
+        
+                String updatedAddress = JOptionPane.showInputDialog("Enter new address:", supplierTable.getValueAt(selectedRow, 2));
+                String updatedSuppliedItem = JOptionPane.showInputDialog("Enter updated supplied item:", supplierTable.getValueAt(selectedRow, 3));
+        
+                //Validate Date format
+                String transactionDate = JOptionPane.showInputDialog("Enter new transaction date (yyyy/mm/dd):", supplierTable.getValueAt(selectedRow, 5));
+                if (!Supplier.isValidDate(transactionDate)) {
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid date yyyy/mm/dd.");
+                    return;
+                }
+        
+                // Validate the  updated expenditure input
+                String expenditureInput = JOptionPane.showInputDialog("Enter updated expenditure amount:", supplierTable.getValueAt(selectedRow, 4));
+                double updatedExpenditure = 0.0;
                 try {
-                    double amount = Double.parseDouble(expenditureText);
-                    if (amount <= 0) {
-                        JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid positive amount.");
-                        return;
-                    }
-        
-                    supplierDatabase.addExpenditure(name, contactField.getText(), amount);
-
-                    // Format the expenditure as currency
-                    NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
-                    String formattedExpenditure = currencyFormat.format(supplierDatabase.searchSupplier(name).get(0).getTotalExpenditures());
-        
-                    // Update the expenditure column in the table
-                    DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
-                    model.setValueAt(formattedExpenditure, selectedRow, 3);
-        
-                    // Optionally, refresh expenditure total or handle other changes
-                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Expenditure added.");
+                    updatedExpenditure = Double.parseDouble(expenditureInput);
                 } catch (NumberFormatException nfe) {
-                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid number for expenditure.");
+                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please enter a valid expenditure amount.");
+                    return;
                 }
-            } else {
-                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a supplier to add an expenditure.");
-            }
-        });
 
-        updateButton.addActionListener(e ->{
-            int selectedRow = supplierTable.getSelectedRow();
-            if (selectedRow >= 0) {
-                String name = (String) supplierTable.getValueAt(selectedRow, 0);
-                String contactInfo = (String) supplierTable.getValueAt(selectedRow, 1);
-                String suppliedItem = (String) supplierTable.getValueAt(selectedRow, 2);
-    
-                String updatedContactInfo = JOptionPane.showInputDialog("Enter new contact info:", contactInfo);
-                String updatedSuppliedItem = JOptionPane.showInputDialog("Enter new supplied item:", suppliedItem);
-    
-                if (updatedContactInfo != null && updatedSuppliedItem != null) {
-                    supplierDatabase.updateSupplier(name, contactInfo, updatedContactInfo, updatedSuppliedItem);
-    
-                    DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
-                    model.setValueAt(updatedContactInfo, selectedRow, 1);
-                    model.setValueAt(updatedSuppliedItem, selectedRow, 2);
-    
-                    JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier updated.");
-                }
+        
+                // Update supplier details
+                supplierDatabase.updateSupplier(name, currentContactInfo, updatedContactInfo, updatedAddress, updatedSuppliedItem, transactionDate, updatedExpenditure);
+        
+                // Update the table
+                DefaultTableModel model = (DefaultTableModel) supplierTable.getModel();
+                model.setValueAt(updatedContactInfo, selectedRow, 1);
+                model.setValueAt(updatedAddress, selectedRow, 2);
+                model.setValueAt(updatedSuppliedItem, selectedRow, 3);
+                model.setValueAt(NumberFormat.getCurrencyInstance().format(updatedExpenditure), selectedRow, 4);
+                model.setValueAt(transactionDate, selectedRow, 5);
+        
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Supplier updated successfully.");
             } else {
                 JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Please select a supplier to edit.");
             }
