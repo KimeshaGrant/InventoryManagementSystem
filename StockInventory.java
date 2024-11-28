@@ -37,7 +37,14 @@ public class StockInventory {
             inventory.add(newStock);
             checkStockLevel(newStock);  // Check stock level for the new stock
         }
+
+        InventoryChange change = new InventoryChange(staffId, reasonforChange, 0, quantity, 0.0, "Add");
+        inventoryChanges.add(change);
+   
+        System.out.println("Stock Added!");
+   
     }
+
 
     // Update stock quantity and track change
     public void updateStock(String itemName, int newQuantity, String staffId, String reasonForChange, double salesAdjustment) {
@@ -55,7 +62,14 @@ public class StockInventory {
             }
         }
         JOptionPane.showMessageDialog(null, "Item not found: " + itemName, "Error", JOptionPane.ERROR_MESSAGE);
+
+        InventoryChange change = new InventoryChange(staffId, reasonforChange, 0, quantity, 0.0, "Update");
+        inventoryChanges.add(change);
+
+        System.out.println("Inventory Updated!");
     }
+
+    
 
     // Remove stock item from inventory and track the change
     public void removeStock(String itemName, String staffId, String reasonForChange) {
@@ -72,7 +86,14 @@ public class StockInventory {
             }
         }
         JOptionPane.showMessageDialog(null, "Item not found: " + itemName, "Error", JOptionPane.ERROR_MESSAGE);
+
+        InventoryChange change = new InventoryChange(staffId, reasonforChange, 0, quantity, 0.0, "Remove");
+        inventoryChanges.add(change);
+   
+        System.out.println("Stock Removed!");
+   
     }
+
 
     // Check stock level and notify if stock is below 10
     private void checkStockLevel(Stock stock) {
@@ -194,4 +215,5 @@ public class StockInventory {
         }
     }
 }
+
 
