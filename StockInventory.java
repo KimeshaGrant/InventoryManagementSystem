@@ -107,6 +107,43 @@ public class StockInventory {
         }
         return totalValue;
     }
+    
+    // Method to load stock items from a file
+    public void loadFromFile(String fileName) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Skip header line
+                if (line.startsWith("Item Name")) continue;
+
+                String[] data = line.split(",");
+                String itemName = data[0].trim();
+                int quantity = Integer.parseInt(data[1].trim());
+                double price = Double.parseDouble(data[2].trim());
+
+                addStock(itemName, quantity, price);
+            }
+            System.out.println("Inventory loaded from file: " + fileName);
+        } catch (IOException e) {
+            System.out.println("Error loading inventory from file: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid data format in file: " + e.getMessage());
+        }
+    }
+
+    // Method to generate random stock items for testing
+    public void generateRandomStockItems(int numItems) {
+        Random rand = new Random();
+        for (int i = 0; i < numItems; i++) {
+            String itemName = "Item" + (i + 1);
+            int quantity = rand.nextInt(100) + 1; // Random quantity between 1 and 100
+            double price = rand.nextDouble() * 100; // Random price between 0 and 100
+            addStock(itemName, quantity, price);
+        }
+        System.out.println("Generated " + numItems + " random stock items.");
+    }
 }
+
+
 
 
