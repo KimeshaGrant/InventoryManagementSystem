@@ -6,21 +6,48 @@ import java.util.List;
 
 public class StockInventory {
     private List<Stock> inventory;
+    private List<InventoryChange> inventoryChanges;
 
     public StockInventory() {
         this.inventory = new ArrayList<>();
+        this.inventoryChanges = new ArrayList<>();
     }
-
-    public void addStock(String itemName, int quantity, double price) {
-        Stock newStock = new Stock(itemName, quantity, price);
+    // add item to inventory
+    public void addStock(String itemName, String staffId, int quantity, double price) {
+        Stock newStock = new Stock(itemName, staffId, quantity, price);
         inventory.add(newStock);
         System.out.println("Stock added: " + itemName);
-    }
 
-    public void updateStock(String itemName, int newQuantity) {
+    //delete item from inventory
+    public void removeStock (String itemName, String staffId, int quantity, String reasonForChange, double price) {
+            for (Stock stock : inventory) {
+            if (stock.getItemName().equalsIgnoreCase(itemName)) {
+
+                // Record the inventory change before removing
+                InventoryChange change = new InventoryChange(staffId, reasonForChange, stock.getQuantity(), 0, 0.0);
+                inventoryChanges.add(change);
+
+                // Remove the stock item from the inventory
+                inventory.remove(stock);
+                System.out.println("Stock removed: " + itemName);
+                return; 
+            }
+        }
+        System.out.println("Stock item not found: " + itemName); // Item not found
+    }
+        
+    }
+    //update and track change
+    public void updateStock(String itemName, int newQuantity String staffId, String reasonForChange, double salesAdjustment) {
         for (Stock stock : inventory) {
             if (stock.getItemName().equalsIgnoreCase(itemName)) {
+                int previousQuantity = stock.getQuantity();
                 stock.updateQuantity(newQuantity);
+
+                // Record the inventory change
+                InventoryChange change = new InventoryChange(staffId, reasonForChange, previousQuantity, newQuantity, salesAdjustment);
+                inventoryChanges.add(change);
+
                 System.out.println("Updated quantity for: " + itemName);
                 return;
             }
@@ -46,6 +73,16 @@ public class StockInventory {
             }
         }
         return null;
+    }
+
+    public void generateInventoryChangeReport() {
+        System.out.println("\n--- Inventory Change Report ---");
+        System.out.println("| Staff ID | Reason for Change | Date and Time | Previous Quantity | New Quantity | Sales Adjustment |");
+        System.out.println("|----------|-------------------|---------------|-------------------|---------------|------------------|");
+
+        for (InventoryChange change : inventoryChanges) {
+            System.out.println(change);
+        }
     }
 
     public void exportReport(String fileName) {
