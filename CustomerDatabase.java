@@ -198,7 +198,7 @@ public class CustomerDatabase {
                     }
     
                     // Load payment history
-                    while ((line = reader.readLine()) != null && line.contains("Amount:")) {
+                    while ((line = reader.readLine()) != null && line.contains("Amount: $")) {
                         String[] paymentParts = line.split("\\|");
                         double amount = Double.parseDouble(paymentParts[0].trim().replace("Amount: ", ""));
                         String method = paymentParts[1].trim().replace("Method: ", "");

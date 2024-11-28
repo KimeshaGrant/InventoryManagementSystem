@@ -1,11 +1,8 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.ArrayList;
+import java.util.List;
 
 public class HistogramPanel extends JPanel {
     private int histogramHeight = 200;
@@ -30,6 +27,10 @@ public class HistogramPanel extends JPanel {
     }
 
     public void addHistogramColumn(String label, int value, Color color) {
+        // Ensure the value is not negative, if needed
+        if (value < 0) {
+            value = 0;
+        }
         Bar bar = new Bar(label, value, color);
         bars.add(bar);
     }
@@ -40,6 +41,7 @@ public class HistogramPanel extends JPanel {
 
         int maxValue = 0;
 
+        // Find the maximum value in the bars list for scaling
         for (Bar bar : bars) {
             maxValue = Math.max(maxValue, bar.getValue());
         }
@@ -52,7 +54,7 @@ public class HistogramPanel extends JPanel {
             label.setVerticalTextPosition(JLabel.TOP);
             label.setVerticalAlignment(JLabel.BOTTOM);
 
-            // Calculate bar height and scale
+            // Calculate bar height and scale according to max value
             int barHeight = (bar.getValue() * histogramHeight) / maxValue;
 
             // Ensure bar height does not exceed panel size
@@ -65,7 +67,7 @@ public class HistogramPanel extends JPanel {
             Icon icon = new ColorIcon(bar.getColor(), barWidth, barHeight - labelMargin); // Reduce height slightly for label margin
             label.setIcon(icon);
 
-            // Add bar icon and label to the panels
+            // Add the bar icon and label to the panels
             barPanel.add(label);
             JLabel barLabel = new JLabel(bar.getLabel());
             barLabel.setHorizontalAlignment(JLabel.CENTER);

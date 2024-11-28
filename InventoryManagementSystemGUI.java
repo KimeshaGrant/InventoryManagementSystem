@@ -2,7 +2,14 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+//<<<<<<< HEAD
+//import java.util.*;
+//import javax.mail.*;
+//import javax.mail.internet.*;
+//import java.io.*;
+import java.text.NumberFormat;
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.List;
 //<<<<<<< HEAD
 //import java.util.*;
@@ -14,6 +21,9 @@ import java.util.ArrayList;
 //>>>>>>> 4e43a9725b1148203ebcc8043276dc15abbab47a
 
 
+=======
+//>>>>>>> 4e43a9725b1148203ebcc8043276dc15abbab47a
+>>>>>>> ae7f4a8c938e12342b13b4ace7ed07b8b4f62aab
 
 public class InventoryManagementSystemGUI {
 
@@ -211,8 +221,87 @@ public class InventoryManagementSystemGUI {
        
 
 
+<<<<<<< HEAD
        
 
+=======
+                // Check stock and send email if less than 10
+                if (quantity < 10) {
+                    sendLowStockEmail(itemName, quantity);
+                }
+
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock added successfully.");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity or price. Please enter valid numbers.");
+            }
+        });
+
+        updateButton.addActionListener(e -> {
+            String itemName = itemNameField.getText();
+            try {
+                int quantity = Integer.parseInt(quantityField.getText());
+                stockInventory.updateStock(itemName, quantity);
+
+                DefaultTableModel model = (DefaultTableModel) stockTable.getModel();
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    if (model.getValueAt(i, 0).equals(itemName)) {
+                        model.setValueAt(quantity, i, 1);
+                        break;
+                    }
+                }
+
+                // Check stock and send email if less than 10
+                if (quantity < 10) {
+                    sendLowStockEmail(itemName, quantity);
+                }
+
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Stock updated successfully.");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Invalid quantity. Please enter a valid number.");
+            }
+        });
+
+        calculateButton.addActionListener(e -> {
+            double totalValue = stockInventory.calculateInventoryValue();
+            JOptionPane.showMessageDialog(inputPanel.getTopLevelAncestor(), "Total Inventory Value: $" + totalValue);
+        });
+
+        return inputPanel;
+    }
+
+    private void sendLowStockEmail(String itemName, int quantity) {
+        String recipient = "user@example.com"; // Change this to your desired recipient email
+        String subject = "Low Stock Alert: " + itemName;
+        String body = "The stock for the item \"" + itemName + "\" is below the threshold. Current quantity: " + quantity + ".";
+        
+        String from = "youremail@example.com"; // Your email address
+        String password = "yourpassword"; // Your email password
+
+        /*Properties properties = new Properties();
+        properties.put("mail.smtp.host", "smtp.gmail.com");
+        properties.put("mail.smtp.port", "587");
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
+
+        Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(from, password);
+            }
+        });
+
+        try {
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(from));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+            message.setSubject(subject);
+            message.setText(body);
+
+            Transport.send(message);
+            System.out.println("Low stock email sent successfully!");
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }*/
+>>>>>>> ae7f4a8c938e12342b13b4ace7ed07b8b4f62aab
     }
 
     private void showCustomerDatabaseWindow() {
