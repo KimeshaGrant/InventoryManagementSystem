@@ -15,6 +15,7 @@ public class InventoryChange {
     private int previousQuantity;
     private int newQuantity;
     private double salesAdjustment;
+    private String transactionType;
 
     // Constructor to initialize inventory change details
     public InventoryChange(String staffId, String reasonForChange, int previousQuantity, int newQuantity, double salesAdjustment) {
@@ -24,6 +25,7 @@ public class InventoryChange {
         this.previousQuantity = previousQuantity;
         this.newQuantity = newQuantity;
         this.salesAdjustment = salesAdjustment;
+        this.transactionType = transactionType;
     }
 
     public String getStaffId() {
@@ -52,7 +54,7 @@ public class InventoryChange {
 
     @Override
     public String toString() {
-        return String.format("| %s | %s | %s | Previous: %d | New: %d | Sales Adjustment: %.2f |", staffId, reasonForChange, dateTimeOfChange, previousQuantity, newQuantity, salesAdjustment);
+        return String.format("| %s | %s | %s | Previous: %d | New: %d | Sales Adjustment: %.2f |", staffId, reasonForChange, dateTimeOfChange, previousQuantity, newQuantity, salesAdjustment, transactionType);
     }
 
 }
