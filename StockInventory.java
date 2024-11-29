@@ -38,6 +38,7 @@ public class StockInventory {
             checkStockLevel(newStock);  // Check stock level for the new stock
         }
 
+        String reasonForChange = "Added stock"; 
         InventoryChange change = new InventoryChange(staffId, reasonforChange, 0, quantity, 0.0, "Add");
         inventoryChanges.add(change);
    
@@ -63,7 +64,7 @@ public class StockInventory {
         }
         JOptionPane.showMessageDialog(null, "Item not found: " + itemName, "Error", JOptionPane.ERROR_MESSAGE);
 
-        InventoryChange change = new InventoryChange(staffId, reasonforChange, 0, quantity, 0.0, "Update");
+        InventoryChange change = new InventoryChange (staffId, reasonForChange, previousQuantity, newQuantity, salesAdjustment, "Update");
         inventoryChanges.add(change);
 
         System.out.println("Inventory Updated!");
@@ -73,25 +74,20 @@ public class StockInventory {
 
     // Remove stock item from inventory and track the change
     public void removeStock(String itemName, String staffId, String reasonForChange) {
-        for (Stock stock : inventory) {
-            if (stock.getItemName().equalsIgnoreCase(itemName)) {
-                // Record the inventory change before removing
-                InventoryChange change = new InventoryChange(staffId, reasonForChange, stock.getQuantity(), 0, 0.0);
-                inventoryChanges.add(change);
-
-                // Remove the stock item from the inventory
-                inventory.remove(stock);
-                System.out.println("Stock removed: " + itemName);
-                return;
-            }
+        Stock stock = findStockByName(itemName);
+        if (stock != null) {
+            InventoryChange change = new InventoryChange(staffId, reasonForChange, stock.getQuantity(), 0, 0.0, "Remove");
+            inventoryChanges.add(change);
+            inventory.remove(stock);
+            System.out.println("Stock removed: " + itemName);
+        } else {
+            JOptionPane.showMessageDialog(null, "Item not found: " + itemName, "Error", JOptionPane.ERROR_MESSAGE);
         }
-        JOptionPane.showMessageDialog(null, "Item not found: " + itemName, "Error", JOptionPane.ERROR_MESSAGE);
-
+        
         InventoryChange change = new InventoryChange(staffId, reasonforChange, 0, quantity, 0.0, "Remove");
         inventoryChanges.add(change);
    
         System.out.println("Stock Removed!");
-   
     }
 
 
